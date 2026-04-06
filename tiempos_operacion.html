@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>E2E | Tiempos de Operación — La Lucha</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#eef1f7;color:#1e293b;min-height:100vh}
+
+/* ── HEADER ── */
+.header{background:#1e293b;color:#fff;padding:18px 32px;display:flex;align-items:center;gap:14px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.header-icon{width:44px;height:44px;background:#ff441f;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.header h1{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.header p{font-size:11px;color:#94a3b8;margin-top:3px}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.badge-rappi{background:#ff441f;color:#fff;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-date{background:#334155;color:#94a3b8;padding:5px 12px;border-radius:20px;font-size:11px}
+
+/* ── TABS ── */
+.tabs-bar{background:#fff;border-bottom:2px solid #e2e8f0;padding:0 28px;display:flex;gap:0;overflow-x:auto}
+.tab{padding:14px 22px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:600;color:#64748b;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:7px;margin-bottom:-2px}
+.tab:hover{color:#ff441f;background:#fff5f3}
+.tab.active{color:#ff441f;border-bottom-color:#ff441f;background:#fff8f7}
+.tab-chip{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700}
+.tab.active .tab-chip{background:#ff441f;color:#fff}
+.tab:not(.active) .tab-chip{background:#f1f5f9;color:#64748b}
+
+/* ── PANEL ── */
+.panel{display:none;padding:24px 28px}
+.panel.active{display:block}
+
+/* ── KPI ROW ── */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px}
+.kpi{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06);border-top:4px solid #e2e8f0;transition:transform .15s}
+.kpi:hover{transform:translateY(-2px)}
+.kpi.ok{border-top-color:#22c55e}.kpi.warn{border-top-color:#f59e0b}.kpi.crit{border-top-color:#ef4444}
+.kpi-lbl{font-size:9.5px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.kpi-val{font-size:24px;font-weight:900;color:#0f172a;line-height:1}
+.kpi-val small{font-size:12px;font-weight:500;color:#64748b}
+.kpi-note{font-size:10px;color:#94a3b8;margin-top:5px}
+
+/* ── CHART BOX ── */
+.chart-box{background:#fff;border-radius:12px;padding:22px 24px;box-shadow:0 1px 6px rgba(0,0,0,.07);margin-bottom:20px}
+.chart-hdr{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
+.chart-hdr h2{font-size:15px;font-weight:800;color:#0f172a}
+.chart-hdr span{font-size:11px;color:#94a3b8}
+.chart-wrap{position:relative;height:330px}
+
+/* ── TABLE ── */
+.tbl-box{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 6px rgba(0,0,0,.07);overflow-x:auto}
+.tbl-hdr{font-size:13px;font-weight:800;color:#0f172a;margin-bottom:14px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{background:#f8fafc;padding:9px 13px;text-align:center;font-weight:800;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0;white-space:nowrap}
+thead th:first-child{text-align:left}
+tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s}
+tbody tr:hover{background:#f8fafc}
+tbody td{padding:9px 13px;text-align:center;color:#374151}
+tbody td:first-child{text-align:left;font-weight:700;color:#1e293b}
+.chip{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:800}
+.chip-ok{background:#dcfce7;color:#166534}
+.chip-warn{background:#fef9c3;color:#854d0e}
+.chip-crit{background:#fee2e2;color:#991b1b}
+
+/* ── SWATCH ── */
+.sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:middle}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding:18px;font-size:10px;color:#94a3b8}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🥪</div>
+  <div>
+    <h1>E2E | Tiempos de Operación — La Lucha</h1>
+    <p>Análisis semanal de tiempos operativos · Colombia · Feb – Mar 2026</p>
+  </div>
+  <div class="header-right">
+    <span class="badge-date">📅 2026-04-06</span>
+    <span class="badge-rappi">Rappi Ops · Centro País</span>
+  </div>
+</div>
+
+<!-- ── TABS ── -->
+<div class="tabs-bar">
+  <button class="tab active" onclick="go(0)">🥪 La Lucha Sanguchería <span class="tab-chip">10893</span></button>
+  <button class="tab" onclick="go(1)">⚡ Sanguchería Turbo <span class="tab-chip">292592</span></button>
+  <button class="tab" onclick="go(2)">⚡ Desayunos Turbo <span class="tab-chip">308942</span></button>
+  <button class="tab" onclick="go(3)">🍳 La Lucha Desayunos <span class="tab-chip">287436</span></button>
+</div>
+
+<!-- ════════════════ TAB 0 — 10893 ════════════════ -->
+<div class="panel active" id="p0">
+  <div class="kpi-row">
+    <div class="kpi crit"><div class="kpi-lbl">E2E (últ. semana)</div><div class="kpi-val">43.9<small> min</small></div><div class="kpi-note">SLA &lt;17 🔴</div></div>
+    <div class="kpi ok">  <div class="kpi-lbl">Integration</div>      <div class="kpi-val">1.2<small> min</small></div> <div class="kpi-note">SLA &lt;1.5 ✅</div></div>
+    <div class="kpi crit"><div class="kpi-lbl">Rest Wait RT</div>      <div class="kpi-val">13.4<small> min</small></div><div class="kpi-note">Asignación RT</div></div>
+    <div class="kpi ok">  <div class="kpi-lbl">RTWT Perm</div>         <div class="kpi-val">3.3<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
+    <div class="kpi ok">  <div class="kpi-lbl">RTWT After</div>        <div class="kpi-val">3.1<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
+    <div class="kpi crit"><div class="kpi-lbl">Delivery</div>           <div class="kpi-val">15.1<small> min</small></div><div class="kpi-note">SLA &lt;8 🔴</div></div>
+  </div>
+  <div class="chart-box">
+    <div class="chart-hdr"><h2>E2E | La Lucha Sanguchería — Ally Times</h2><span>semana × semana · minutos promedio</span></div>
+    <div class="chart-wrap"><canvas id="c0"></canvas></div>
+  </div>
+  <div class="tbl-box">
+    <div class="tbl-hdr">Detalle semanal — La Lucha Sanguchería (Brand 10893)</div>
+    <table>
+      <thead><tr><th>Semana</th><th>Órdenes</th><th><span class="sw" style="background:#1B2A4A"></span>Integration</th><th><span class="sw" style="background:#4C9BE8"></span>Rest Wait RT</th><th><span class="sw" style="background:#E8820C"></span>RTWT Perm</th><th><span class="sw" style="background:#00C4A7"></span>RTWT After</th><th><span class="sw" style="background:#FF6B9D"></span>Delivery</th><th><span class="sw" style="background:#8B0038"></span>E2E</th></tr></thead>
+      <tbody>
+        <tr><td>2026-02-02</td><td>1,804</td><td>1.5</td><td>20.4</td><td>3.2</td><td>3.8</td><td>16.3</td><td><span class="chip chip-crit">51.9</span></td></tr>
+        <tr><td>2026-02-09</td><td>1,951</td><td>1.4</td><td>20.6</td><td>2.9</td><td>3.8</td><td>16.6</td><td><span class="chip chip-crit">52.1</span></td></tr>
+        <tr><td>2026-02-16</td><td>2,162</td><td>1.5</td><td>22.6</td><td>3.0</td><td>3.9</td><td>15.8</td><td><span class="chip chip-crit">53.3</span></td></tr>
+        <tr><td>2026-02-23</td><td>2,015</td><td>1.6</td><td>23.7</td><td>3.1</td><td>4.2</td><td>16.6</td><td><span class="chip chip-crit">55.6</span></td></tr>
+        <tr><td>2026-03-02</td><td>2,182</td><td>1.3</td><td>23.3</td><td>3.5</td><td>3.8</td><td>16.7</td><td><span class="chip chip-crit">55.7</span></td></tr>
+        <tr><td>2026-03-09</td><td>1,737</td><td>1.3</td><td>19.1</td><td>3.6</td><td>4.0</td><td>16.8</td><td><span class="chip chip-crit">52.1</span></td></tr>
+        <tr><td>2026-03-16</td><td>1,889</td><td>1.4</td><td>15.1</td><td>3.5</td><td>3.9</td><td>16.4</td><td><span class="chip chip-crit">48.7</span></td></tr>
+        <tr><td>2026-03-23</td><td>2,496</td><td>1.2</td><td>15.8</td><td>3.2</td><td>3.2</td><td>16.0</td><td><span class="chip chip-crit">48.0</span></td></tr>
+        <tr><td>2026-03-30</td><td>1,810</td><td>1.2</td><td>13.4</td><td>3.3</td><td>3.1</td><td>15.1</td><td><span class="chip chip-crit">43.9</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════ TAB 1 — 292592 ════════════════ -->
+<div class="panel" id="p1">
+  <div class="kpi-row">
+    <div class="kpi warn"><div class="kpi-lbl">E2E (últ. semana)</div><div class="kpi-val">14.4<small> min</small></div><div class="kpi-note">SLA &lt;17 ✅</div></div>
+    <div class="kpi ok"> <div class="kpi-lbl">Integration</div>      <div class="kpi-val">0.9<small> min</small></div> <div class="kpi-note">SLA &lt;1.5 ✅</div></div>
+    <div class="kpi ok"> <div class="kpi-lbl">Rest Wait RT</div>      <div class="kpi-val">1.1<small> min</small></div> <div class="kpi-note">Asignación RT</div></div>
+    <div class="kpi ok"> <div class="kpi-lbl">RTWT Perm</div>         <div class="kpi-val">1.3<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
+    <div class="kpi ok"> <div class="kpi-lbl">RTWT After</div>        <div class="kpi-val">2.8<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
+    <div class="kpi ok"> <div class="kpi-lbl">Delivery</div>           <div class="kpi-val">5.8<small> min</small></div> <div class="kpi-note">SLA &lt;8 ✅</div></div>
+  </div>
+  <div class="chart-box">
+    <div class="chart-hdr"><h2>E2E | La Lucha Sanguchería Turbo — Ally Times</h2><span>semana × semana · minutos promedio</span></div>
+    <div class="chart-wrap"><canvas id="c1"></canvas></div>
+  </div>
+  <div class="tbl-box">
+    <div class="tbl-hdr">Detalle semanal — La Lucha Sanguchería Turbo (Brand 292592)</div>
+    <table>
+      <thead><tr><th>Semana</th><th>Órdenes</th><th><span class="sw" style="background:#1B2A4A"></span>Integration</th><th><span class="sw" style="background:#4C9BE8"></span>Rest Wait RT</th><th><span class="sw" style="background:#E8820C"></span>RTWT Perm</th><th><span class="sw" style="background:#00C4A7"></span>RTWT After</th><th><span class="sw" style="background:#FF6B9D"></span>Delivery</th><th><span class="sw" style="background:#8B0038"></span>E2E</th></tr></thead>
+      <tbody>
+        <tr><td>2026-02-02</td><td>1,281</td><td>1.4</td><td>2.5</td><td>0.9</td><td>5.4</td><td>6.9</td><td><span class="chip chip-warn">19.6</span></td></tr>
+        <tr><td>2026-02-09</td><td>1,262</td><td>1.3</td><td>2.8</td><td>0.5</td><td>5.2</td><td>6.7</td><td><span class="chip chip-warn">18.8</span></td></tr>
+        <tr><td>2026-02-16</td><td>1,265</td><td>1.4</td><td>2.2</td><td>0.3</td><td>5.5</td><td>6.5</td><td><span class="chip chip-warn">18.5</span></td></tr>
+        <tr><td>2026-02-23</td><td>1,362</td><td>1.3</td><td>3.1</td><td>0.3</td><td>4.9</td><td>6.5</td><td><span class="chip chip-warn">18.6</span></td></tr>
+        <tr><td>2026-03-02</td><td>1,524</td><td>1.1</td><td>3.5</td><td>0.2</td><td>5.0</td><td>6.7</td><td><span class="chip chip-warn">19.6</span></td></tr>
+        <tr><td>2026-03-09</td><td>1,520</td><td>1.0</td><td>3.3</td><td>0.2</td><td>4.8</td><td>6.8</td><td><span class="chip chip-warn">19.5</span></td></tr>
+        <tr><td>2026-03-16</td><td>1,115</td><td>1.1</td><td>3.0</td><td>1.2</td><td>3.8</td><td>7.0</td><td><span class="chip chip-warn">19.2</span></td></tr>
+        <tr><td>2026-03-23</td><td>1,385</td><td>1.0</td><td>1.9</td><td>1.1</td><td>3.1</td><td>6.7</td><td><span class="chip chip-ok">16.8</span></td></tr>
+        <tr><td>2026-03-30</td><td>1,006</td><td>0.9</td><td>1.1</td><td>1.3</td><td>2.8</td><td>5.8</td><td><span class="chip chip-ok">14.4</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════ TAB 2 — 308942 ════════════════ -->
+<div class="panel" id="p2">
+  <div class="kpi-row">
+    <div class="kpi ok">  <div class="kpi-lbl">E2E (últ. semana)</div><div class="kpi-val">15.7<small> min</small></div><div class="kpi-note">SLA &lt;17 ✅</div></div>
+    <div class="kpi ok">  <div class="kpi-lbl">Integration</div>      <div class="kpi-val">1.5<small> min</small></div> <div class="kpi-note">SLA &lt;1.5 ✅</div></div>
+    <div class="kpi ok">  <div class="kpi-lbl">Rest Wait RT</div>      <div class="kpi-val">1.1<small> min</small></div> <div class="kpi-note">Asignación RT</div></div>
+    <div class="kpi ok">  <div class="kpi-lbl">RTWT Perm</div>         <div class="kpi-val">2.2<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
+    <div class="kpi ok">  <div class="kpi-lbl">RTWT After</div>        <div class="kpi-val">3.9<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
+    <div class="kpi ok">  <div class="kpi-lbl">Delivery</div>           <div class="kpi-val">5.2<small> min</small></div> <div class="kpi-note">SLA &lt;8 ✅</div></div>
+  </div>
+  <div class="chart-box">
+    <div class="chart-hdr"><h2>E2E | La Lucha Desayunos Turbo — Ally Times</h2><span>semana × semana · minutos promedio</span></div>
+    <div class="chart-wrap"><canvas id="c2"></canvas></div>
+  </div>
+  <div class="tbl-box">
+    <div class="tbl-hdr">Detalle semanal — La Lucha Desayunos Turbo (Brand 308942)</div>
+    <table>
+      <thead><tr><th>Semana</th><th>Órdenes</th><th><span class="sw" style="background:#1B2A4A"></span>Integration</th><th><span class="sw" style="background:#4C9BE8"></span>Rest Wait RT</th><th><span class="sw" style="background:#E8820C"></span>RTWT Perm</th><th><span class="sw" style="background:#00C4A7"></span>RTWT After</th><th><span class="sw" style="background:#FF6B9D"></span>Delivery</th><th><span class="sw" style="background:#8B0038"></span>E2E</th></tr></thead>
+      <tbody>
+        <tr><td>2026-02-02</td><td>30</td> <td>1.6</td><td>2.5</td><td>1.3</td><td>5.9</td><td>4.5</td><td><span class="chip chip-ok">15.9</span></td></tr>
+        <tr><td>2026-02-09</td><td>26</td> <td>0.9</td><td>0.9</td><td>1.0</td><td>8.9</td><td>4.0</td><td><span class="chip chip-warn">17.1</span></td></tr>
+        <tr><td>2026-02-16</td><td>58</td> <td>1.0</td><td>0.7</td><td>2.0</td><td>6.3</td><td>5.6</td><td><span class="chip chip-ok">16.6</span></td></tr>
+        <tr><td>2026-02-23</td><td>61</td> <td>2.3</td><td>0.9</td><td>1.7</td><td>5.1</td><td>6.6</td><td><span class="chip chip-warn">17.2</span></td></tr>
+        <tr><td>2026-03-02</td><td>106</td><td>2.1</td><td>0.4</td><td>1.6</td><td>7.4</td><td>6.5</td><td><span class="chip chip-warn">17.9</span></td></tr>
+        <tr><td>2026-03-09</td><td>134</td><td>1.5</td><td>1.2</td><td>0.9</td><td>6.2</td><td>6.4</td><td><span class="chip chip-warn">17.2</span></td></tr>
+        <tr><td>2026-03-16</td><td>188</td><td>1.3</td><td>1.2</td><td>1.8</td><td>4.5</td><td>6.8</td><td><span class="chip chip-warn">17.5</span></td></tr>
+        <tr><td>2026-03-23</td><td>211</td><td>1.1</td><td>3.2</td><td>1.5</td><td>3.6</td><td>6.2</td><td><span class="chip chip-warn">17.8</span></td></tr>
+        <tr><td>2026-03-30</td><td>84</td> <td>1.5</td><td>1.1</td><td>2.2</td><td>3.9</td><td>5.2</td><td><span class="chip chip-ok">15.7</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════════ TAB 3 — 287436 ════════════════ -->
+<div class="panel" id="p3">
+  <div class="kpi-row">
+    <div class="kpi crit"><div class="kpi-lbl">E2E (últ. semana)</div><div class="kpi-val">43.1<small> min</small></div><div class="kpi-note">SLA &lt;17 🔴</div></div>
+    <div class="kpi ok"> <div class="kpi-lbl">Integration</div>      <div class="kpi-val">1.5<small> min</small></div> <div class="kpi-note">SLA &lt;1.5 ✅</div></div>
+    <div class="kpi crit"><div class="kpi-lbl">Rest Wait RT</div>     <div class="kpi-val">14.4<small> min</small></div><div class="kpi-note">Asignación RT</div></div>
+    <div class="kpi ok"> <div class="kpi-lbl">RTWT Perm</div>         <div class="kpi-val">3.5<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
+    <div class="kpi ok"> <div class="kpi-lbl">RTWT After</div>        <div class="kpi-val">3.2<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
+    <div class="kpi crit"><div class="kpi-lbl">Delivery</div>          <div class="kpi-val">12.6<small> min</small></div><div class="kpi-note">SLA &lt;8 🔴</div></div>
+  </div>
+  <div class="chart-box">
+    <div class="chart-hdr"><h2>E2E | La Lucha Desayunos — Ally Times</h2><span>semana × semana · minutos promedio</span></div>
+    <div class="chart-wrap"><canvas id="c3"></canvas></div>
+  </div>
+  <div class="tbl-box">
+    <div class="tbl-hdr">Detalle semanal — La Lucha Desayunos (Brand 287436)</div>
+    <table>
+      <thead><tr><th>Semana</th><th>Órdenes</th><th><span class="sw" style="background:#1B2A4A"></span>Integration</th><th><span class="sw" style="background:#4C9BE8"></span>Rest Wait RT</th><th><span class="sw" style="background:#E8820C"></span>RTWT Perm</th><th><span class="sw" style="background:#00C4A7"></span>RTWT After</th><th><span class="sw" style="background:#FF6B9D"></span>Delivery</th><th><span class="sw" style="background:#8B0038"></span>E2E</th></tr></thead>
+      <tbody>
+        <tr><td>2026-02-02</td><td>83</td><td>2.0</td><td>17.4</td><td>4.6</td><td>1.9</td><td>18.5</td><td><span class="chip chip-crit">48.3</span></td></tr>
+        <tr><td>2026-02-09</td><td>53</td><td>2.4</td><td>17.1</td><td>5.0</td><td>1.3</td><td>17.1</td><td><span class="chip chip-crit">46.5</span></td></tr>
+        <tr><td>2026-02-16</td><td>55</td><td>1.6</td><td>14.7</td><td>4.4</td><td>2.5</td><td>16.7</td><td><span class="chip chip-crit">46.6</span></td></tr>
+        <tr><td>2026-02-23</td><td>30</td><td>1.7</td><td>22.9</td><td>4.1</td><td>2.4</td><td>16.3</td><td><span class="chip chip-crit">56.4</span></td></tr>
+        <tr><td>2026-03-02</td><td>54</td><td>1.6</td><td>17.6</td><td>4.6</td><td>1.6</td><td>15.0</td><td><span class="chip chip-crit">47.3</span></td></tr>
+        <tr><td>2026-03-09</td><td>48</td><td>1.3</td><td>17.2</td><td>4.5</td><td>2.2</td><td>14.9</td><td><span class="chip chip-crit">46.9</span></td></tr>
+        <tr><td>2026-03-16</td><td>46</td><td>1.7</td><td>13.7</td><td>4.3</td><td>2.8</td><td>16.1</td><td><span class="chip chip-crit">45.0</span></td></tr>
+        <tr><td>2026-03-23</td><td>51</td><td>1.2</td><td>11.9</td><td>4.2</td><td>2.0</td><td>17.3</td><td><span class="chip chip-crit">44.7</span></td></tr>
+        <tr><td>2026-03-30</td><td>46</td><td>1.5</td><td>14.4</td><td>3.5</td><td>3.2</td><td>12.6</td><td><span class="chip chip-crit">43.1</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer>Fuente: Snowflake · RP_SILVER_DB_PROD.DES_PROD · ORDER_TIMES + ORDER_DIMENSIONS_CO &nbsp;·&nbsp; Actualizado: 2026-04-06 &nbsp;·&nbsp; Rappi Ops Centro País</footer>
+
+<script>
+Chart.register(ChartDataLabels);
+
+// ── Palette — 5 clearly distinct segment colors + 1 line ──
+const C = {
+  integration : '#1B2A4A',   // dark navy
+  restWait    : '#4C9BE8',   // bright blue
+  rtwtPerm    : '#E8820C',   // vivid orange
+  rtwtAfter   : '#00C4A7',   // emerald teal
+  delivery    : '#FF6B9D',   // hot pink
+  e2e         : '#8B0038'    // deep crimson (line)
+};
+
+const WEEKS = ['2026-02-02','2026-02-09','2026-02-16','2026-02-23',
+               '2026-03-02','2026-03-09','2026-03-16','2026-03-23','2026-03-30'];
+
+// ── Data per brand ──
+const DATA = [
+  { // 10893
+    integration:[1.5,1.4,1.5,1.6,1.3,1.3,1.4,1.2,1.2],
+    restWait   :[20.4,20.6,22.6,23.7,23.3,19.1,15.1,15.8,13.4],
+    rtwtPerm   :[3.2,2.9,3.0,3.1,3.5,3.6,3.5,3.2,3.3],
+    rtwtAfter  :[3.8,3.8,3.9,4.2,3.8,4.0,3.9,3.2,3.1],
+    delivery   :[16.3,16.6,15.8,16.6,16.7,16.8,16.4,16.0,15.1],
+    e2e        :[51.9,52.1,53.3,55.6,55.7,52.1,48.7,48.0,43.9]
+  },
+  { // 292592
+    integration:[1.4,1.3,1.4,1.3,1.1,1.0,1.1,1.0,0.9],
+    restWait   :[2.5,2.8,2.2,3.1,3.5,3.3,3.0,1.9,1.1],
+    rtwtPerm   :[0.9,0.5,0.3,0.3,0.2,0.2,1.2,1.1,1.3],
+    rtwtAfter  :[5.4,5.2,5.5,4.9,5.0,4.8,3.8,3.1,2.8],
+    delivery   :[6.9,6.7,6.5,6.5,6.7,6.8,7.0,6.7,5.8],
+    e2e        :[19.6,18.8,18.5,18.6,19.6,19.5,19.2,16.8,14.4]
+  },
+  { // 308942
+    integration:[1.6,0.9,1.0,2.3,2.1,1.5,1.3,1.1,1.5],
+    restWait   :[2.5,0.9,0.7,0.9,0.4,1.2,1.2,3.2,1.1],
+    rtwtPerm   :[1.3,1.0,2.0,1.7,1.6,0.9,1.8,1.5,2.2],
+    rtwtAfter  :[5.9,8.9,6.3,5.1,7.4,6.2,4.5,3.6,3.9],
+    delivery   :[4.5,4.0,5.6,6.6,6.5,6.4,6.8,6.2,5.2],
+    e2e        :[15.9,17.1,16.6,17.2,17.9,17.2,17.5,17.8,15.7]
+  },
+  { // 287436
+    integration:[2.0,2.4,1.6,1.7,1.6,1.3,1.7,1.2,1.5],
+    restWait   :[17.4,17.1,14.7,22.9,17.6,17.2,13.7,11.9,14.4],
+    rtwtPerm   :[4.6,5.0,4.4,4.1,4.6,4.5,4.3,4.2,3.5],
+    rtwtAfter  :[1.9,1.3,2.5,2.4,1.6,2.2,2.8,2.0,3.2],
+    delivery   :[18.5,17.1,16.7,16.3,15.0,14.9,16.1,17.3,12.6],
+    e2e        :[48.3,46.5,46.6,56.4,47.3,46.9,45.0,44.7,43.1]
+  }
+];
+
+// ── Build one chart ──
+function buildChart(id, d) {
+  const ctx = document.getElementById(id).getContext('2d');
+
+  const barLabel = {
+    display: ctx => ctx.dataset.data[ctx.dataIndex] >= 1.0,
+    color: '#fff',
+    font: { size: 10, weight: '800' },
+    formatter: v => v.toFixed(1),
+    anchor: 'center',
+    align: 'center',
+    textShadowBlur: 3,
+    textShadowColor: 'rgba(0,0,0,.4)'
+  };
+
+  new Chart(ctx, {
+    data: {
+      labels: WEEKS,
+      datasets: [
+        { type:'bar',  label:'Integration', data:d.integration, backgroundColor:C.integration, stack:'s', datalabels:barLabel },
+        { type:'bar',  label:'Rest_Wait_RT',data:d.restWait,    backgroundColor:C.restWait,    stack:'s', datalabels:barLabel },
+        { type:'bar',  label:'RTWT_perm',   data:d.rtwtPerm,    backgroundColor:C.rtwtPerm,    stack:'s', datalabels:barLabel },
+        { type:'bar',  label:'RTWT_after',  data:d.rtwtAfter,   backgroundColor:C.rtwtAfter,   stack:'s', datalabels:barLabel },
+        { type:'bar',  label:'Delivery',    data:d.delivery,    backgroundColor:C.delivery,    stack:'s', datalabels:barLabel },
+        {
+          type:'line', label:'E2E',
+          data:d.e2e,
+          borderColor:C.e2e,
+          backgroundColor:'transparent',
+          borderWidth:3,
+          pointBackgroundColor:C.e2e,
+          pointBorderColor:'#fff',
+          pointBorderWidth:2,
+          pointRadius:6,
+          tension:.35,
+          datalabels:{
+            display:true,
+            color:C.e2e,
+            font:{size:12,weight:'900'},
+            anchor:'end', align:'top', offset:4,
+            formatter: v => v.toFixed(1)
+          }
+        }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index' },
+      layout:{ padding:{ top:30 } },
+      plugins:{
+        legend:{
+          position:'top',
+          labels:{
+            usePointStyle:true,
+            pointStyle:'rectRounded',
+            font:{size:12,weight:'600'},
+            padding:18,
+            color:'#374151'
+          }
+        },
+        tooltip:{
+          backgroundColor:'rgba(15,23,42,.9)',
+          titleColor:'#f8fafc',
+          bodyColor:'#cbd5e1',
+          padding:12,
+          callbacks:{
+            label: ctx => `  ${ctx.dataset.label}: ${ctx.parsed.y} min`
+          }
+        },
+        datalabels:{}
+      },
+      scales:{
+        x:{
+          stacked:true,
+          grid:{ display:false },
+          ticks:{ font:{size:11}, color:'#64748b' },
+          border:{ color:'#e2e8f0' }
+        },
+        y:{
+          stacked:false,
+          beginAtZero:true,
+          grid:{ color:'#f1f5f9', lineWidth:1 },
+          ticks:{
+            font:{size:11}, color:'#64748b',
+            callback: v => v + ' min'
+          },
+          border:{ color:'#e2e8f0', dash:[4,4] },
+          title:{ display:true, text:'Minutos', font:{size:10}, color:'#94a3b8' }
+        }
+      }
+    }
+  });
+}
+
+// ── Tab switching ──
+function go(idx){
+  document.querySelectorAll('.panel').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tab').forEach((btn,i)=>btn.classList.toggle('active',i===idx));
+}
+
+// ── Init ──
+buildChart('c0', DATA[0]);
+buildChart('c1', DATA[1]);
+buildChart('c2', DATA[2]);
+buildChart('c3', DATA[3]);
+</script>
+</body>
+</html>
