@@ -2,388 +2,518 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>E2E | Tiempos de Operación — La Lucha</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#eef1f7;color:#1e293b;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f8;color:#1e293b;min-height:100vh}
 
-/* ── HEADER ── */
-.header{background:#1e293b;color:#fff;padding:18px 32px;display:flex;align-items:center;gap:14px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
-.header-icon{width:44px;height:44px;background:#ff441f;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.header h1{font-size:18px;font-weight:800;letter-spacing:-.3px}
-.header p{font-size:11px;color:#94a3b8;margin-top:3px}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.badge-rappi{background:#ff441f;color:#fff;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700}
-.badge-date{background:#334155;color:#94a3b8;padding:5px 12px;border-radius:20px;font-size:11px}
+.hdr{background:#1e293b;color:#fff;padding:16px 28px;display:flex;align-items:center;gap:14px}
+.hdr-icon{width:40px;height:40px;background:#ff441f;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0}
+.hdr h1{font-size:16px;font-weight:800}
+.hdr p{font-size:11px;color:#94a3b8;margin-top:2px}
+.hdr-right{margin-left:auto;display:flex;gap:8px;flex-shrink:0}
+.bdg{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}
+.bdg-r{background:#ff441f;color:#fff}
+.bdg-g{background:#334155;color:#94a3b8}
 
-/* ── TABS ── */
-.tabs-bar{background:#fff;border-bottom:2px solid #e2e8f0;padding:0 28px;display:flex;gap:0;overflow-x:auto}
-.tab{padding:14px 22px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:600;color:#64748b;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:7px;margin-bottom:-2px}
-.tab:hover{color:#ff441f;background:#fff5f3}
-.tab.active{color:#ff441f;border-bottom-color:#ff441f;background:#fff8f7}
-.tab-chip{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700}
-.tab.active .tab-chip{background:#ff441f;color:#fff}
-.tab:not(.active) .tab-chip{background:#f1f5f9;color:#64748b}
+.tab-bar{background:#fff;border-bottom:2px solid #e2e8f0;padding:0 24px;display:flex;overflow-x:auto}
+.tab{padding:12px 20px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:700;color:#64748b;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:7px;margin-bottom:-2px}
+.tab:hover{color:#ff441f}
+.tab.on{color:#ff441f;border-bottom-color:#ff441f}
+.chip{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700}
+.tab.on .chip{background:#ff441f;color:#fff}
+.tab:not(.on) .chip{background:#f1f5f9;color:#64748b}
 
-/* ── PANEL ── */
-.panel{display:none;padding:24px 28px}
-.panel.active{display:block}
+/* ─── Granularity toggle bar ─── */
+.gran-bar{background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 24px;display:flex;align-items:center;gap:12px}
+.gran-label{font-size:12px;font-weight:700;color:#64748b;white-space:nowrap}
+.gran-toggle{display:flex;background:#f1f5f9;border-radius:8px;padding:3px;gap:3px}
+.gran-btn{padding:5px 20px;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:#64748b;transition:all .15s}
+.gran-btn.on{background:#ff441f;color:#fff;box-shadow:0 1px 4px rgba(255,68,31,.3)}
+.gran-btn:hover:not(.on){background:#e2e8f0}
+.gran-info{font-size:11px;color:#94a3b8;font-weight:400}
 
-/* ── KPI ROW ── */
-.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:22px}
-.kpi{background:#fff;border-radius:10px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06);border-top:4px solid #e2e8f0;transition:transform .15s}
-.kpi:hover{transform:translateY(-2px)}
+.panel{display:none;padding:20px 24px}
+.panel.on{display:block}
+
+/* ─── Store filter ─── */
+.filter-bar{background:#fff;border-radius:10px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.filter-label{font-size:12px;font-weight:700;color:#64748b;white-space:nowrap}
+.filter-select{flex:1;max-width:380px;padding:7px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#1e293b;background:#fff;cursor:pointer;outline:none;transition:border-color .2s}
+.filter-select:hover,.filter-select:focus{border-color:#ff441f}
+.filter-info{font-size:11px;color:#94a3b8;margin-left:auto}
+
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
+.kpi{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.06);border-top:4px solid #e2e8f0}
 .kpi.ok{border-top-color:#22c55e}.kpi.warn{border-top-color:#f59e0b}.kpi.crit{border-top-color:#ef4444}
-.kpi-lbl{font-size:9.5px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
-.kpi-val{font-size:24px;font-weight:900;color:#0f172a;line-height:1}
-.kpi-val small{font-size:12px;font-weight:500;color:#64748b}
-.kpi-note{font-size:10px;color:#94a3b8;margin-top:5px}
+.kl{font-size:9px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.kv{font-size:20px;font-weight:900;color:#0f172a;line-height:1}
+.kv small{font-size:11px;font-weight:500;color:#64748b}
+.kn{font-size:10px;color:#94a3b8;margin-top:3px}
 
-/* ── CHART BOX ── */
-.chart-box{background:#fff;border-radius:12px;padding:22px 24px;box-shadow:0 1px 6px rgba(0,0,0,.07);margin-bottom:20px}
-.chart-hdr{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
-.chart-hdr h2{font-size:15px;font-weight:800;color:#0f172a}
-.chart-hdr span{font-size:11px;color:#94a3b8}
-.chart-wrap{position:relative;height:330px}
+.cbox{background:#fff;border-radius:12px;padding:20px 22px 14px;box-shadow:0 1px 6px rgba(0,0,0,.07);margin-bottom:16px}
+.ctitle{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.ctitle h2{font-size:14px;font-weight:800;color:#0f172a}
+.ctitle span{font-size:11px;color:#94a3b8}
+.cwrap{position:relative;height:370px}
 
-/* ── TABLE ── */
-.tbl-box{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 6px rgba(0,0,0,.07);overflow-x:auto}
-.tbl-hdr{font-size:13px;font-weight:800;color:#0f172a;margin-bottom:14px}
-table{width:100%;border-collapse:collapse;font-size:12.5px}
-thead th{background:#f8fafc;padding:9px 13px;text-align:center;font-weight:800;font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid #e2e8f0;white-space:nowrap}
+.tbox{background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 1px 6px rgba(0,0,0,.07);overflow-x:auto}
+.ttitle{font-size:13px;font-weight:800;color:#0f172a;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:#f8fafc;padding:8px 10px;text-align:center;font-weight:800;font-size:9.5px;color:#64748b;text-transform:uppercase;letter-spacing:.4px;border-bottom:2px solid #e2e8f0;white-space:nowrap}
 thead th:first-child{text-align:left}
 tbody tr{border-bottom:1px solid #f1f5f9;transition:background .12s}
 tbody tr:hover{background:#f8fafc}
-tbody td{padding:9px 13px;text-align:center;color:#374151}
+tbody td{padding:8px 10px;text-align:center;color:#374151}
 tbody td:first-child{text-align:left;font-weight:700;color:#1e293b}
-.chip{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:800}
-.chip-ok{background:#dcfce7;color:#166534}
-.chip-warn{background:#fef9c3;color:#854d0e}
-.chip-crit{background:#fee2e2;color:#991b1b}
-
-/* ── SWATCH ── */
-.sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:middle}
-
-/* ── FOOTER ── */
-footer{text-align:center;padding:18px;font-size:10px;color:#94a3b8}
+.ch{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:800}
+.ok2{background:#dcfce7;color:#166534}.warn2{background:#fef9c3;color:#854d0e}.crit2{background:#fee2e2;color:#991b1b}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:3px;vertical-align:middle}
+footer{text-align:center;padding:14px;font-size:10px;color:#94a3b8}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-icon">🥪</div>
+<div class="hdr">
+  <div class="hdr-icon">LL</div>
   <div>
     <h1>E2E | Tiempos de Operación — La Lucha</h1>
-    <p>Análisis semanal de tiempos operativos · Colombia · Feb – Mar 2026</p>
+    <p>Análisis de tiempos operativos · Colombia · 2026</p>
   </div>
-  <div class="header-right">
-    <span class="badge-date">📅 2026-04-06</span>
-    <span class="badge-rappi">Rappi Ops · Centro País</span>
-  </div>
-</div>
-
-<!-- ── TABS ── -->
-<div class="tabs-bar">
-  <button class="tab active" onclick="go(0)">🥪 La Lucha Sanguchería <span class="tab-chip">10893</span></button>
-  <button class="tab" onclick="go(1)">⚡ Sanguchería Turbo <span class="tab-chip">292592</span></button>
-  <button class="tab" onclick="go(2)">⚡ Desayunos Turbo <span class="tab-chip">308942</span></button>
-  <button class="tab" onclick="go(3)">🍳 La Lucha Desayunos <span class="tab-chip">287436</span></button>
-</div>
-
-<!-- ════════════════ TAB 0 — 10893 ════════════════ -->
-<div class="panel active" id="p0">
-  <div class="kpi-row">
-    <div class="kpi crit"><div class="kpi-lbl">E2E (últ. semana)</div><div class="kpi-val">43.9<small> min</small></div><div class="kpi-note">SLA &lt;17 🔴</div></div>
-    <div class="kpi ok">  <div class="kpi-lbl">Integration</div>      <div class="kpi-val">1.2<small> min</small></div> <div class="kpi-note">SLA &lt;1.5 ✅</div></div>
-    <div class="kpi crit"><div class="kpi-lbl">Rest Wait RT</div>      <div class="kpi-val">13.4<small> min</small></div><div class="kpi-note">Asignación RT</div></div>
-    <div class="kpi ok">  <div class="kpi-lbl">RTWT Perm</div>         <div class="kpi-val">3.3<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
-    <div class="kpi ok">  <div class="kpi-lbl">RTWT After</div>        <div class="kpi-val">3.1<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
-    <div class="kpi crit"><div class="kpi-lbl">Delivery</div>           <div class="kpi-val">15.1<small> min</small></div><div class="kpi-note">SLA &lt;8 🔴</div></div>
-  </div>
-  <div class="chart-box">
-    <div class="chart-hdr"><h2>E2E | La Lucha Sanguchería — Ally Times</h2><span>semana × semana · minutos promedio</span></div>
-    <div class="chart-wrap"><canvas id="c0"></canvas></div>
-  </div>
-  <div class="tbl-box">
-    <div class="tbl-hdr">Detalle semanal — La Lucha Sanguchería (Brand 10893)</div>
-    <table>
-      <thead><tr><th>Semana</th><th>Órdenes</th><th><span class="sw" style="background:#1B2A4A"></span>Integration</th><th><span class="sw" style="background:#4C9BE8"></span>Rest Wait RT</th><th><span class="sw" style="background:#E8820C"></span>RTWT Perm</th><th><span class="sw" style="background:#00C4A7"></span>RTWT After</th><th><span class="sw" style="background:#FF6B9D"></span>Delivery</th><th><span class="sw" style="background:#8B0038"></span>E2E</th></tr></thead>
-      <tbody>
-        <tr><td>2026-02-02</td><td>1,804</td><td>1.5</td><td>20.4</td><td>3.2</td><td>3.8</td><td>16.3</td><td><span class="chip chip-crit">51.9</span></td></tr>
-        <tr><td>2026-02-09</td><td>1,951</td><td>1.4</td><td>20.6</td><td>2.9</td><td>3.8</td><td>16.6</td><td><span class="chip chip-crit">52.1</span></td></tr>
-        <tr><td>2026-02-16</td><td>2,162</td><td>1.5</td><td>22.6</td><td>3.0</td><td>3.9</td><td>15.8</td><td><span class="chip chip-crit">53.3</span></td></tr>
-        <tr><td>2026-02-23</td><td>2,015</td><td>1.6</td><td>23.7</td><td>3.1</td><td>4.2</td><td>16.6</td><td><span class="chip chip-crit">55.6</span></td></tr>
-        <tr><td>2026-03-02</td><td>2,182</td><td>1.3</td><td>23.3</td><td>3.5</td><td>3.8</td><td>16.7</td><td><span class="chip chip-crit">55.7</span></td></tr>
-        <tr><td>2026-03-09</td><td>1,737</td><td>1.3</td><td>19.1</td><td>3.6</td><td>4.0</td><td>16.8</td><td><span class="chip chip-crit">52.1</span></td></tr>
-        <tr><td>2026-03-16</td><td>1,889</td><td>1.4</td><td>15.1</td><td>3.5</td><td>3.9</td><td>16.4</td><td><span class="chip chip-crit">48.7</span></td></tr>
-        <tr><td>2026-03-23</td><td>2,496</td><td>1.2</td><td>15.8</td><td>3.2</td><td>3.2</td><td>16.0</td><td><span class="chip chip-crit">48.0</span></td></tr>
-        <tr><td>2026-03-30</td><td>1,810</td><td>1.2</td><td>13.4</td><td>3.3</td><td>3.1</td><td>15.1</td><td><span class="chip chip-crit">43.9</span></td></tr>
-      </tbody>
-    </table>
+  <div class="hdr-right">
+    <span class="bdg bdg-g">2026-04-06</span>
+    <span class="bdg bdg-r">Rappi Ops · Centro País</span>
   </div>
 </div>
 
-<!-- ════════════════ TAB 1 — 292592 ════════════════ -->
-<div class="panel" id="p1">
-  <div class="kpi-row">
-    <div class="kpi warn"><div class="kpi-lbl">E2E (últ. semana)</div><div class="kpi-val">14.4<small> min</small></div><div class="kpi-note">SLA &lt;17 ✅</div></div>
-    <div class="kpi ok"> <div class="kpi-lbl">Integration</div>      <div class="kpi-val">0.9<small> min</small></div> <div class="kpi-note">SLA &lt;1.5 ✅</div></div>
-    <div class="kpi ok"> <div class="kpi-lbl">Rest Wait RT</div>      <div class="kpi-val">1.1<small> min</small></div> <div class="kpi-note">Asignación RT</div></div>
-    <div class="kpi ok"> <div class="kpi-lbl">RTWT Perm</div>         <div class="kpi-val">1.3<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
-    <div class="kpi ok"> <div class="kpi-lbl">RTWT After</div>        <div class="kpi-val">2.8<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
-    <div class="kpi ok"> <div class="kpi-lbl">Delivery</div>           <div class="kpi-val">5.8<small> min</small></div> <div class="kpi-note">SLA &lt;8 ✅</div></div>
-  </div>
-  <div class="chart-box">
-    <div class="chart-hdr"><h2>E2E | La Lucha Sanguchería Turbo — Ally Times</h2><span>semana × semana · minutos promedio</span></div>
-    <div class="chart-wrap"><canvas id="c1"></canvas></div>
-  </div>
-  <div class="tbl-box">
-    <div class="tbl-hdr">Detalle semanal — La Lucha Sanguchería Turbo (Brand 292592)</div>
-    <table>
-      <thead><tr><th>Semana</th><th>Órdenes</th><th><span class="sw" style="background:#1B2A4A"></span>Integration</th><th><span class="sw" style="background:#4C9BE8"></span>Rest Wait RT</th><th><span class="sw" style="background:#E8820C"></span>RTWT Perm</th><th><span class="sw" style="background:#00C4A7"></span>RTWT After</th><th><span class="sw" style="background:#FF6B9D"></span>Delivery</th><th><span class="sw" style="background:#8B0038"></span>E2E</th></tr></thead>
-      <tbody>
-        <tr><td>2026-02-02</td><td>1,281</td><td>1.4</td><td>2.5</td><td>0.9</td><td>5.4</td><td>6.9</td><td><span class="chip chip-warn">19.6</span></td></tr>
-        <tr><td>2026-02-09</td><td>1,262</td><td>1.3</td><td>2.8</td><td>0.5</td><td>5.2</td><td>6.7</td><td><span class="chip chip-warn">18.8</span></td></tr>
-        <tr><td>2026-02-16</td><td>1,265</td><td>1.4</td><td>2.2</td><td>0.3</td><td>5.5</td><td>6.5</td><td><span class="chip chip-warn">18.5</span></td></tr>
-        <tr><td>2026-02-23</td><td>1,362</td><td>1.3</td><td>3.1</td><td>0.3</td><td>4.9</td><td>6.5</td><td><span class="chip chip-warn">18.6</span></td></tr>
-        <tr><td>2026-03-02</td><td>1,524</td><td>1.1</td><td>3.5</td><td>0.2</td><td>5.0</td><td>6.7</td><td><span class="chip chip-warn">19.6</span></td></tr>
-        <tr><td>2026-03-09</td><td>1,520</td><td>1.0</td><td>3.3</td><td>0.2</td><td>4.8</td><td>6.8</td><td><span class="chip chip-warn">19.5</span></td></tr>
-        <tr><td>2026-03-16</td><td>1,115</td><td>1.1</td><td>3.0</td><td>1.2</td><td>3.8</td><td>7.0</td><td><span class="chip chip-warn">19.2</span></td></tr>
-        <tr><td>2026-03-23</td><td>1,385</td><td>1.0</td><td>1.9</td><td>1.1</td><td>3.1</td><td>6.7</td><td><span class="chip chip-ok">16.8</span></td></tr>
-        <tr><td>2026-03-30</td><td>1,006</td><td>0.9</td><td>1.1</td><td>1.3</td><td>2.8</td><td>5.8</td><td><span class="chip chip-ok">14.4</span></td></tr>
-      </tbody>
-    </table>
-  </div>
+<div class="tab-bar">
+  <button class="tab on" onclick="go(0)">La Lucha Sanguchería <span class="chip">10893</span></button>
+  <button class="tab"    onclick="go(1)">Sanguchería Turbo    <span class="chip">292592</span></button>
+  <button class="tab"    onclick="go(2)">Desayunos Turbo      <span class="chip">308942</span></button>
+  <button class="tab"    onclick="go(3)">La Lucha Desayunos   <span class="chip">287436</span></button>
 </div>
 
-<!-- ════════════════ TAB 2 — 308942 ════════════════ -->
-<div class="panel" id="p2">
-  <div class="kpi-row">
-    <div class="kpi ok">  <div class="kpi-lbl">E2E (últ. semana)</div><div class="kpi-val">15.7<small> min</small></div><div class="kpi-note">SLA &lt;17 ✅</div></div>
-    <div class="kpi ok">  <div class="kpi-lbl">Integration</div>      <div class="kpi-val">1.5<small> min</small></div> <div class="kpi-note">SLA &lt;1.5 ✅</div></div>
-    <div class="kpi ok">  <div class="kpi-lbl">Rest Wait RT</div>      <div class="kpi-val">1.1<small> min</small></div> <div class="kpi-note">Asignación RT</div></div>
-    <div class="kpi ok">  <div class="kpi-lbl">RTWT Perm</div>         <div class="kpi-val">2.2<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
-    <div class="kpi ok">  <div class="kpi-lbl">RTWT After</div>        <div class="kpi-val">3.9<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
-    <div class="kpi ok">  <div class="kpi-lbl">Delivery</div>           <div class="kpi-val">5.2<small> min</small></div> <div class="kpi-note">SLA &lt;8 ✅</div></div>
+<!-- Global granularity toggle -->
+<div class="gran-bar">
+  <span class="gran-label">Vista:</span>
+  <div class="gran-toggle">
+    <button class="gran-btn on" id="btn-weekly" onclick="setGranularity('weekly')">Semanal</button>
+    <button class="gran-btn"    id="btn-daily"  onclick="setGranularity('daily')">Diario</button>
   </div>
-  <div class="chart-box">
-    <div class="chart-hdr"><h2>E2E | La Lucha Desayunos Turbo — Ally Times</h2><span>semana × semana · minutos promedio</span></div>
-    <div class="chart-wrap"><canvas id="c2"></canvas></div>
-  </div>
-  <div class="tbl-box">
-    <div class="tbl-hdr">Detalle semanal — La Lucha Desayunos Turbo (Brand 308942)</div>
-    <table>
-      <thead><tr><th>Semana</th><th>Órdenes</th><th><span class="sw" style="background:#1B2A4A"></span>Integration</th><th><span class="sw" style="background:#4C9BE8"></span>Rest Wait RT</th><th><span class="sw" style="background:#E8820C"></span>RTWT Perm</th><th><span class="sw" style="background:#00C4A7"></span>RTWT After</th><th><span class="sw" style="background:#FF6B9D"></span>Delivery</th><th><span class="sw" style="background:#8B0038"></span>E2E</th></tr></thead>
-      <tbody>
-        <tr><td>2026-02-02</td><td>30</td> <td>1.6</td><td>2.5</td><td>1.3</td><td>5.9</td><td>4.5</td><td><span class="chip chip-ok">15.9</span></td></tr>
-        <tr><td>2026-02-09</td><td>26</td> <td>0.9</td><td>0.9</td><td>1.0</td><td>8.9</td><td>4.0</td><td><span class="chip chip-warn">17.1</span></td></tr>
-        <tr><td>2026-02-16</td><td>58</td> <td>1.0</td><td>0.7</td><td>2.0</td><td>6.3</td><td>5.6</td><td><span class="chip chip-ok">16.6</span></td></tr>
-        <tr><td>2026-02-23</td><td>61</td> <td>2.3</td><td>0.9</td><td>1.7</td><td>5.1</td><td>6.6</td><td><span class="chip chip-warn">17.2</span></td></tr>
-        <tr><td>2026-03-02</td><td>106</td><td>2.1</td><td>0.4</td><td>1.6</td><td>7.4</td><td>6.5</td><td><span class="chip chip-warn">17.9</span></td></tr>
-        <tr><td>2026-03-09</td><td>134</td><td>1.5</td><td>1.2</td><td>0.9</td><td>6.2</td><td>6.4</td><td><span class="chip chip-warn">17.2</span></td></tr>
-        <tr><td>2026-03-16</td><td>188</td><td>1.3</td><td>1.2</td><td>1.8</td><td>4.5</td><td>6.8</td><td><span class="chip chip-warn">17.5</span></td></tr>
-        <tr><td>2026-03-23</td><td>211</td><td>1.1</td><td>3.2</td><td>1.5</td><td>3.6</td><td>6.2</td><td><span class="chip chip-warn">17.8</span></td></tr>
-        <tr><td>2026-03-30</td><td>84</td> <td>1.5</td><td>1.1</td><td>2.2</td><td>3.9</td><td>5.2</td><td><span class="chip chip-ok">15.7</span></td></tr>
-      </tbody>
-    </table>
-  </div>
+  <span class="gran-info" id="gran-info">Feb 02 – Mar 30, 2026 &nbsp;·&nbsp; 9 semanas</span>
 </div>
 
-<!-- ════════════════ TAB 3 — 287436 ════════════════ -->
-<div class="panel" id="p3">
-  <div class="kpi-row">
-    <div class="kpi crit"><div class="kpi-lbl">E2E (últ. semana)</div><div class="kpi-val">43.1<small> min</small></div><div class="kpi-note">SLA &lt;17 🔴</div></div>
-    <div class="kpi ok"> <div class="kpi-lbl">Integration</div>      <div class="kpi-val">1.5<small> min</small></div> <div class="kpi-note">SLA &lt;1.5 ✅</div></div>
-    <div class="kpi crit"><div class="kpi-lbl">Rest Wait RT</div>     <div class="kpi-val">14.4<small> min</small></div><div class="kpi-note">Asignación RT</div></div>
-    <div class="kpi ok"> <div class="kpi-lbl">RTWT Perm</div>         <div class="kpi-val">3.5<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
-    <div class="kpi ok"> <div class="kpi-lbl">RTWT After</div>        <div class="kpi-val">3.2<small> min</small></div> <div class="kpi-note">SLA &lt;4 ✅</div></div>
-    <div class="kpi crit"><div class="kpi-lbl">Delivery</div>          <div class="kpi-val">12.6<small> min</small></div><div class="kpi-note">SLA &lt;8 🔴</div></div>
-  </div>
-  <div class="chart-box">
-    <div class="chart-hdr"><h2>E2E | La Lucha Desayunos — Ally Times</h2><span>semana × semana · minutos promedio</span></div>
-    <div class="chart-wrap"><canvas id="c3"></canvas></div>
-  </div>
-  <div class="tbl-box">
-    <div class="tbl-hdr">Detalle semanal — La Lucha Desayunos (Brand 287436)</div>
-    <table>
-      <thead><tr><th>Semana</th><th>Órdenes</th><th><span class="sw" style="background:#1B2A4A"></span>Integration</th><th><span class="sw" style="background:#4C9BE8"></span>Rest Wait RT</th><th><span class="sw" style="background:#E8820C"></span>RTWT Perm</th><th><span class="sw" style="background:#00C4A7"></span>RTWT After</th><th><span class="sw" style="background:#FF6B9D"></span>Delivery</th><th><span class="sw" style="background:#8B0038"></span>E2E</th></tr></thead>
-      <tbody>
-        <tr><td>2026-02-02</td><td>83</td><td>2.0</td><td>17.4</td><td>4.6</td><td>1.9</td><td>18.5</td><td><span class="chip chip-crit">48.3</span></td></tr>
-        <tr><td>2026-02-09</td><td>53</td><td>2.4</td><td>17.1</td><td>5.0</td><td>1.3</td><td>17.1</td><td><span class="chip chip-crit">46.5</span></td></tr>
-        <tr><td>2026-02-16</td><td>55</td><td>1.6</td><td>14.7</td><td>4.4</td><td>2.5</td><td>16.7</td><td><span class="chip chip-crit">46.6</span></td></tr>
-        <tr><td>2026-02-23</td><td>30</td><td>1.7</td><td>22.9</td><td>4.1</td><td>2.4</td><td>16.3</td><td><span class="chip chip-crit">56.4</span></td></tr>
-        <tr><td>2026-03-02</td><td>54</td><td>1.6</td><td>17.6</td><td>4.6</td><td>1.6</td><td>15.0</td><td><span class="chip chip-crit">47.3</span></td></tr>
-        <tr><td>2026-03-09</td><td>48</td><td>1.3</td><td>17.2</td><td>4.5</td><td>2.2</td><td>14.9</td><td><span class="chip chip-crit">46.9</span></td></tr>
-        <tr><td>2026-03-16</td><td>46</td><td>1.7</td><td>13.7</td><td>4.3</td><td>2.8</td><td>16.1</td><td><span class="chip chip-crit">45.0</span></td></tr>
-        <tr><td>2026-03-23</td><td>51</td><td>1.2</td><td>11.9</td><td>4.2</td><td>2.0</td><td>17.3</td><td><span class="chip chip-crit">44.7</span></td></tr>
-        <tr><td>2026-03-30</td><td>46</td><td>1.5</td><td>14.4</td><td>3.5</td><td>3.2</td><td>12.6</td><td><span class="chip chip-crit">43.1</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+<div id="panels"></div>
 
-<footer>Fuente: Snowflake · RP_SILVER_DB_PROD.DES_PROD · ORDER_TIMES + ORDER_DIMENSIONS_CO &nbsp;·&nbsp; Actualizado: 2026-04-06 &nbsp;·&nbsp; Rappi Ops Centro País</footer>
+<footer>Fuente: Snowflake · RP_SILVER_DB_PROD.DES_PROD · ORDER_TIMES + ORDER_DIMENSIONS_CO · 2026-04-06 · Rappi Ops Centro País</footer>
 
 <script>
 Chart.register(ChartDataLabels);
 
-// ── Palette — 5 clearly distinct segment colors + 1 line ──
-const C = {
-  integration : '#1B2A4A',   // dark navy
-  restWait    : '#4C9BE8',   // bright blue
-  rtwtPerm    : '#E8820C',   // vivid orange
-  rtwtAfter   : '#00C4A7',   // emerald teal
-  delivery    : '#FF6B9D',   // hot pink
-  e2e         : '#8B0038'    // deep crimson (line)
-};
+/* ─── Weekly labels ─── */
+const W = ['2026-02-02','2026-02-09','2026-02-16','2026-02-23',
+           '2026-03-02','2026-03-09','2026-03-16','2026-03-23','2026-03-30'];
 
-const WEEKS = ['2026-02-02','2026-02-09','2026-02-16','2026-02-23',
-               '2026-03-02','2026-03-09','2026-03-16','2026-03-23','2026-03-30'];
+/* ─── Daily labels ─── */
+const DAILY_DAYS = ["2026-03-01","2026-03-02","2026-03-03","2026-03-04","2026-03-05","2026-03-06","2026-03-07","2026-03-08","2026-03-09","2026-03-10","2026-03-11","2026-03-12","2026-03-13","2026-03-14","2026-03-15","2026-03-16","2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-21","2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05"];
 
-// ── Data per brand ──
-const DATA = [
-  { // 10893
-    integration:[1.5,1.4,1.5,1.6,1.3,1.3,1.4,1.2,1.2],
-    restWait   :[20.4,20.6,22.6,23.7,23.3,19.1,15.1,15.8,13.4],
-    rtwtPerm   :[3.2,2.9,3.0,3.1,3.5,3.6,3.5,3.2,3.3],
-    rtwtAfter  :[3.8,3.8,3.9,4.2,3.8,4.0,3.9,3.2,3.1],
-    delivery   :[16.3,16.6,15.8,16.6,16.7,16.8,16.4,16.0,15.1],
-    e2e        :[51.9,52.1,53.3,55.6,55.7,52.1,48.7,48.0,43.9]
-  },
-  { // 292592
-    integration:[1.4,1.3,1.4,1.3,1.1,1.0,1.1,1.0,0.9],
-    restWait   :[2.5,2.8,2.2,3.1,3.5,3.3,3.0,1.9,1.1],
-    rtwtPerm   :[0.9,0.5,0.3,0.3,0.2,0.2,1.2,1.1,1.3],
-    rtwtAfter  :[5.4,5.2,5.5,4.9,5.0,4.8,3.8,3.1,2.8],
-    delivery   :[6.9,6.7,6.5,6.5,6.7,6.8,7.0,6.7,5.8],
-    e2e        :[19.6,18.8,18.5,18.6,19.6,19.5,19.2,16.8,14.4]
-  },
-  { // 308942
-    integration:[1.6,0.9,1.0,2.3,2.1,1.5,1.3,1.1,1.5],
-    restWait   :[2.5,0.9,0.7,0.9,0.4,1.2,1.2,3.2,1.1],
-    rtwtPerm   :[1.3,1.0,2.0,1.7,1.6,0.9,1.8,1.5,2.2],
-    rtwtAfter  :[5.9,8.9,6.3,5.1,7.4,6.2,4.5,3.6,3.9],
-    delivery   :[4.5,4.0,5.6,6.6,6.5,6.4,6.8,6.2,5.2],
-    e2e        :[15.9,17.1,16.6,17.2,17.9,17.2,17.5,17.8,15.7]
-  },
-  { // 287436
-    integration:[2.0,2.4,1.6,1.7,1.6,1.3,1.7,1.2,1.5],
-    restWait   :[17.4,17.1,14.7,22.9,17.6,17.2,13.7,11.9,14.4],
-    rtwtPerm   :[4.6,5.0,4.4,4.1,4.6,4.5,4.3,4.2,3.5],
-    rtwtAfter  :[1.9,1.3,2.5,2.4,1.6,2.2,2.8,2.0,3.2],
-    delivery   :[18.5,17.1,16.7,16.3,15.0,14.9,16.1,17.3,12.6],
-    e2e        :[48.3,46.5,46.6,56.4,47.3,46.9,45.0,44.7,43.1]
-  }
+/* ─── Palette (new order: int → cok → rw → rp → ra → del) ─── */
+const P = { int:'#172554', cok:'#A78BFA', rw:'#3B82F6', rp:'#F97316', ra:'#14B8A6', del:'#EC4899', e2e:'#7F1D1D' };
+
+/* ─── SLA thresholds ─── */
+const SLA = { int:1.5, rp:4, ra:4, del:8, e2e:17 };
+
+/* ─── Store-level WEEKLY data [brandIdx][storeIdx] ─── */
+/* Each d entry: [orders, e2e, int, rw, rp, ra, del] — null if no data */
+const STORES = [
+  /* 0 — 10893 La Lucha Sanguchería */
+  [
+    { id:'900024195', name:'Sanguchería 93',
+      d:[[307,46.4,1.1,22.4,1.4,6.0,12.1],[419,47.3,0.9,26.4,1.3,5.5,11.0],[483,46.4,1.3,26.2,1.2,4.8,10.8],[487,51.2,1.2,27.9,1.2,7.1,11.4],[360,47.6,1.0,24.9,1.4,6.8,10.2],[313,44.4,1.0,19.8,1.6,7.8,10.8],[332,41.1,1.0,18.0,1.8,6.8,9.2],[441,40.6,0.9,20.2,1.5,4.7,9.5],[501,38.9,0.8,17.3,2.0,5.1,9.4]] },
+    { id:'900024965', name:'Sanguchería Cr 68',
+      d:[[196,56.7,1.3,16.4,3.1,6.0,20.8],[235,59.3,1.4,16.6,2.6,7.0,21.5],[244,58.4,1.3,18.5,2.6,5.6,20.2],[198,60.2,1.2,21.2,2.1,4.6,20.7],[293,61.9,1.0,20.6,2.5,5.4,21.6],[221,61.1,1.2,19.2,2.3,5.6,21.2],[204,59.7,1.1,16.2,2.0,8.0,20.4],[293,55.5,1.2,12.9,2.6,6.8,20.7],[224,56.5,1.5,15.7,2.7,6.3,20.7]] },
+    { id:'900031427', name:'Sanguchería Calle 122',
+      d:[[519,48.0,2.1,20.7,2.3,1.8,14.1],[529,47.1,2.1,18.4,3.1,1.8,14.6],[577,51.5,1.8,22.6,2.3,3.2,14.7],[402,50.9,2.2,23.7,2.8,1.7,14.6],[585,53.6,1.4,26.2,4.0,1.1,15.5],[457,49.3,1.6,19.2,4.2,1.9,15.6],[453,42.9,1.6,11.9,4.0,1.7,16.0],[646,40.9,1.4,12.7,3.9,1.6,14.4],[517,36.8,1.3,9.5,3.4,1.3,13.7]] },
+    { id:'900046854', name:'Sanguchería 85',
+      d:[[350,54.1,1.2,24.9,4.9,4.0,14.8],[331,52.8,1.1,23.0,4.0,3.6,15.4],[377,53.3,1.6,24.3,5.0,3.9,13.5],[392,55.2,1.1,25.2,4.5,3.9,15.3],[423,56.9,1.2,25.5,4.6,4.1,14.7],[346,49.7,1.1,18.6,4.9,3.4,15.6],[459,44.9,1.2,13.6,4.2,3.3,15.2],[546,46.6,1.2,16.3,4.3,3.4,15.2],[124,42.2,0.9,12.5,4.6,2.7,13.7]] },
+    { id:'900062127', name:'Sanguchería Parque Colina',
+      d:[[285,53.4,1.0,14.3,4.6,3.9,19.3],[270,53.9,1.0,15.8,4.4,3.1,19.9],[295,55.8,0.9,18.3,4.6,3.4,19.4],[358,57.9,1.7,17.7,4.9,4.0,20.2],[339,53.5,1.1,15.9,4.6,3.6,18.5],[287,53.5,1.3,15.4,4.6,3.0,19.6],[295,54.4,1.4,13.6,4.6,2.6,19.6],[416,53.7,1.1,12.6,3.5,1.5,19.7],[280,46.3,1.2,9.3,5.1,1.0,18.6]] },
+    { id:'900411559', name:'Sanguchería Mall Plaza',
+      d:[[147,62.3,2.4,21.7,3.1,2.0,24.2],[167,65.2,2.3,21.6,1.9,2.8,26.2],[186,66.3,2.6,22.2,3.4,2.7,24.6],[178,69.2,2.3,24.3,3.7,2.3,25.8],[182,69.2,2.1,24.1,3.0,2.8,26.1],[113,71.6,2.1,27.0,3.2,2.4,25.5],[146,68.7,2.5,24.2,3.2,3.2,25.3],[154,74.0,1.3,29.6,2.2,2.5,25.4],[164,62.0,1.7,17.7,3.3,2.0,24.4]] }
+  ],
+  /* 1 — 292592 Sanguchería Turbo */
+  [
+    { id:'900378995', name:'La Lucha Turbo (Kraken)',
+      d:[[289,20.8,1.0,3.6,1.0,7.3,6.0],[207,19.5,0.7,3.8,0.5,7.9,4.9],[206,17.9,1.1,2.5,0.4,7.2,4.5],[197,20.9,1.3,3.7,0.5,7.7,5.0],[233,18.9,0.8,2.6,0.3,8.7,4.4],[214,20.2,0.8,3.4,0.3,8.4,4.7],[60,18.1,0.8,3.4,0.2,7.3,4.7],[125,14.4,0.6,1.5,0.2,5.1,4.4],[73,12.9,0.6,0.6,0.2,5.8,3.7]] },
+    { id:'900381065', name:'Turbo Calle 122',
+      d:[[715,20.0,1.7,2.4,1.0,4.4,7.8],[738,19.2,1.6,2.3,0.6,4.4,7.9],[774,18.7,1.4,2.0,0.3,4.8,7.4],[801,19.2,1.5,3.8,0.4,3.9,7.2],[921,20.5,1.1,4.3,0.3,3.3,7.9],[970,20.3,1.0,4.0,0.2,3.6,7.6],[983,19.5,1.2,3.2,1.3,3.4,7.3],[1119,17.2,1.0,2.1,1.3,2.5,7.2],[877,14.5,1.0,1.1,1.5,2.4,6.1]] },
+    { id:'900431897', name:'Turbo 85',
+      d:[[277,17.2,1.0,1.5,0.8,5.7,5.5],[317,17.4,1.0,3.4,0.3,5.4,5.2],[285,18.4,1.5,2.5,0.4,6.0,5.5],[364,16.2,1.1,1.3,0.1,5.4,5.6],[370,17.9,1.0,2.2,0.2,6.8,5.3],[336,16.8,0.8,1.3,0.1,5.9,5.6],[72,15.3,1.0,0.5,0.1,5.7,5.2],[141,15.7,0.9,0.9,0.1,5.8,5.1],[56,13.8,0.7,0.7,0.1,5.3,4.4]] }
+  ],
+  /* 2 — 308942 Desayunos Turbo */
+  [
+    { id:'900412794', name:'Desayunos 93 - Turbo',
+      d:[[30,15.9,1.6,2.5,1.3,5.9,4.5],[26,17.1,0.9,0.9,1.0,8.9,4.0],[21,15.7,1.1,0.5,0.7,9.1,4.1],[24,16.9,1.6,1.5,0.6,7.3,4.6],[24,17.0,0.8,0.7,0.6,9.0,4.7],[24,15.3,0.7,1.2,0.4,8.4,3.6],[15,16.3,1.1,0.4,0.4,8.9,3.8],null,null] },
+    { id:'900469582', name:'Desayunos Calle 122 - Turbo',
+      d:[null,null,[37,17.1,0.9,0.8,2.7,4.8,6.5],[37,17.4,2.7,0.5,2.4,3.5,7.8],[75,18.5,2.7,0.3,1.9,7.0,7.0],[65,17.0,2.0,1.2,0.9,5.3,7.0],[71,18.0,1.5,1.2,2.5,4.5,7.1],[44,15.1,1.5,0.3,2.9,3.3,6.0],[28,13.4,1.4,0.6,3.0,3.1,4.3]] },
+    { id:'900481280', name:'Desayunos 85 - Turbo',
+      d:[null,null,null,null,[7,14.4,0.7,1.4,1.8,5.1,8.0],[45,18.7,1.0,1.1,1.4,6.2,7.1],[102,17.4,1.1,1.3,1.6,3.9,7.0],[167,18.5,0.9,3.7,1.1,3.7,6.3],[56,16.8,1.5,1.3,1.9,4.3,5.7]] }
+  ],
+  /* 3 — 287436 La Lucha Desayunos */
+  [
+    { id:'900369919', name:'Desayunos 85',
+      d:[[12,50.1,1.4,27.9,6.1,0.7,11.9],[7,41.5,2.2,24.4,3.4,2.6,7.6],[9,46.8,1.7,27.0,6.7,0.6,9.6],[2,49.6,2.5,33.8,9.1,0.0,12.4],[15,40.7,0.9,17.7,6.3,1.5,9.5],[9,49.3,0.9,16.6,5.0,1.5,16.6],[6,35.9,1.0,7.2,6.3,2.6,11.1],[12,47.4,1.0,13.6,6.4,1.8,19.3],[1,34.5,0.9,1.5,0.0,1.1,2.4]] },
+    { id:'900369920', name:'Desayunos Parque Colina',
+      d:[[5,40.3,1.1,16.1,1.7,1.1,13.9],[8,37.7,4.9,4.3,9.1,2.0,14.6],[11,47.2,1.1,16.0,5.6,2.1,16.9],[2,52.8,1.4,3.8,1.6,14.4,20.7],[1,31.6,5.0,0.5,5.9,0.0,17.8],[6,41.2,1.1,9.7,2.6,2.4,16.3],[4,51.3,1.4,7.6,2.3,3.6,27.3],[3,43.4,2.0,4.6,8.3,0.0,25.1],[6,34.6,0.9,7.0,7.1,0.0,10.8]] },
+    { id:'900369921', name:'Desayunos Cra 68',
+      d:[[15,53.1,2.0,21.4,3.7,1.2,24.7],[6,37.7,1.2,5.3,5.1,1.0,18.2],[7,44.4,2.5,1.1,5.6,6.2,17.1],[6,57.8,1.3,27.1,5.0,3.5,11.8],[14,53.0,1.1,16.8,2.8,2.3,20.1],[4,40.6,1.2,6.3,3.2,2.1,16.3],[6,38.7,1.2,5.5,3.5,3.9,14.8],[12,50.9,1.3,9.3,3.4,4.8,20.1],[9,54.5,3.5,10.7,3.9,9.1,16.3]] },
+    { id:'900369922', name:'Desayunos 93',
+      d:[[24,49.5,2.2,21.7,7.6,2.9,16.3],[12,51.3,0.9,32.1,6.8,1.4,12.0],[6,56.5,1.3,28.4,6.2,2.3,12.1],[3,57.9,0.7,27.4,7.5,3.1,15.5],[1,56.2,0.5,22.3,12.2,0.0,19.8],[10,55.4,0.8,28.8,7.3,6.4,10.1],[7,39.8,1.4,9.0,8.7,6.8,9.3],[8,39.1,1.1,20.7,1.0,1.7,9.0],[16,38.1,0.9,19.8,2.3,3.0,8.8]] },
+    { id:'900467176', name:'Desayunos Calle 122',
+      d:[[14,33.7,2.1,5.6,4.7,0.1,18.7],[11,36.6,2.7,10.8,5.2,0.4,18.2],[12,40.7,0.9,7.6,3.0,2.0,17.9],[8,38.9,2.1,8.4,6.0,0.2,15.2],[15,39.5,2.4,15.3,6.5,1.2,12.0],[14,35.9,2.2,10.9,5.0,0.1,14.4],[18,43.0,2.2,16.9,3.7,0.7,16.8],[11,35.9,1.1,10.4,4.9,0.1,12.4],[9,34.2,1.5,8.0,3.7,0.4,11.6]] },
+    { id:'900467177', name:'Desayunos Mall Plaza',
+      d:[[13,57.8,2.6,9.0,0.0,4.3,23.7],[9,69.4,2.5,19.5,0.0,0.8,31.1],[10,48.7,2.7,12.1,0.3,3.0,24.7],[9,72.9,1.8,33.3,0.0,1.4,20.3],[8,65.1,2.1,24.9,0.0,1.8,21.3],[5,68.9,1.1,30.7,0.0,0.5,20.3],[5,72.8,1.6,32.1,0.0,3.1,21.8],[5,51.9,1.5,7.9,2.5,1.2,25.1],[5,66.3,0.8,26.6,3.2,2.3,24.6]] }
+  ]
 ];
 
-// ── Build one chart ──
-function buildChart(id, d) {
-  const ctx = document.getElementById(id).getContext('2d');
+/* ─── Brand-level WEEKLY aggregates (for "Todas") ─── */
+const BRAND = [
+  { name:'La Lucha Sanguchería', id:10893,
+    int:[1.5,1.4,1.5,1.6,1.3,1.3,1.4,1.2,1.2], rw:[20.4,20.6,22.6,23.7,23.3,19.1,15.1,15.8,13.4],
+    rp:[3.2,2.9,3.0,3.1,3.5,3.6,3.5,3.2,3.3],   ra:[3.8,3.8,3.9,4.2,3.8,4.0,3.9,3.2,3.1],
+    del:[16.3,16.6,15.8,16.6,16.7,16.8,16.4,16.0,15.1], e2e:[51.9,52.1,53.3,55.6,55.7,52.1,48.7,48.0,43.9] },
+  { name:'Sanguchería Turbo', id:292592,
+    int:[1.4,1.3,1.4,1.3,1.1,1.0,1.1,1.0,0.9], rw:[2.5,2.8,2.2,3.1,3.5,3.3,3.0,1.9,1.1],
+    rp:[0.9,0.5,0.3,0.3,0.2,0.2,1.2,1.1,1.3],  ra:[5.4,5.2,5.5,4.9,5.0,4.8,3.8,3.1,2.8],
+    del:[6.9,6.7,6.5,6.5,6.7,6.8,7.0,6.7,5.8], e2e:[19.6,18.8,18.5,18.6,19.6,19.5,19.2,16.8,14.4] },
+  { name:'Desayunos Turbo', id:308942,
+    int:[1.6,0.9,1.0,2.3,2.1,1.5,1.3,1.1,1.5], rw:[2.5,0.9,0.7,0.9,0.4,1.2,1.2,3.2,1.1],
+    rp:[1.3,1.0,2.0,1.7,1.6,0.9,1.8,1.5,2.2],  ra:[5.9,8.9,6.3,5.1,7.4,6.2,4.5,3.6,3.9],
+    del:[4.5,4.0,5.6,6.6,6.5,6.4,6.8,6.2,5.2], e2e:[15.9,17.1,16.6,17.2,17.9,17.2,17.5,17.8,15.7] },
+  { name:'La Lucha Desayunos', id:287436,
+    int:[2.0,2.4,1.6,1.7,1.6,1.3,1.7,1.2,1.5], rw:[17.4,17.1,14.7,22.9,17.6,17.2,13.7,11.9,14.4],
+    rp:[4.6,5.0,4.4,4.1,4.6,4.5,4.3,4.2,3.5],  ra:[1.9,1.3,2.5,2.4,1.6,2.2,2.8,2.0,3.2],
+    del:[18.5,17.1,16.7,16.3,15.0,14.9,16.1,17.3,12.6], e2e:[48.3,46.5,46.6,56.4,47.3,46.9,45.0,44.7,43.1] }
+];
 
-  const barLabel = {
-    display: ctx => ctx.dataset.data[ctx.dataIndex] >= 1.0,
-    color: '#fff',
-    font: { size: 10, weight: '800' },
-    formatter: v => v.toFixed(1),
-    anchor: 'center',
-    align: 'center',
-    textShadowBlur: 3,
-    textShadowColor: 'rgba(0,0,0,.4)'
+/* ─── Store-level DAILY data [brandIdx][storeIdx] ─── */
+const DAILY_STORES = [
+  [
+    {id:"900024195", name:"Sanguchería 93", d:[[57,42.5,1.0,23.3,1.3,7.0,8.3],[23,50.8,0.7,39.8,0.8,5.2,9.9],[18,41.0,1.7,19.0,1.8,5.3,9.5],[35,51.0,1.1,31.0,0.8,3.5,10.6],[70,49.4,0.9,24.5,1.5,6.8,10.7],[107,45.9,1.0,20.8,1.8,7.8,11.2],[74,47.0,1.0,25.2,1.1,8.1,8.7],[33,48.8,1.1,26.0,1.6,6.5,9.7],[40,53.1,0.8,29.5,0.5,6.2,12.6],[22,43.7,0.8,23.6,1.6,7.0,8.0],[23,37.3,0.8,17.4,1.3,5.7,9.3],[50,45.1,1.0,20.1,1.1,6.8,11.4],[61,46.0,1.1,17.4,2.1,11.4,10.9],[60,42.2,1.4,13.9,2.4,8.0,12.2],[57,41.3,1.0,20.9,1.6,6.8,8.8],[35,41.7,0.7,21.1,1.2,5.7,8.0],[35,42.9,0.8,18.1,2.0,7.2,11.1],[34,45.4,1.4,26.2,1.1,4.3,8.7],[56,47.9,1.5,22.7,1.1,5.5,11.9],[63,38.4,0.6,13.0,3.0,8.4,9.0],[50,35.3,1.2,13.9,1.5,6.8,8.0],[59,38.6,0.9,15.9,2.0,8.0,7.6],[60,36.1,0.9,17.8,1.3,4.2,7.6],[35,46.3,0.9,26.1,0.9,5.6,8.3],[41,43.7,1.0,22.2,0.9,5.5,10.0],[79,38.8,0.8,18.6,1.6,4.7,9.3],[80,42.6,0.9,22.5,1.0,5.5,10.6],[76,37.7,0.9,16.3,1.7,3.8,10.3],[70,42.8,0.9,21.3,2.3,4.4,9.6],[36,45.0,0.6,27.6,0.5,3.7,8.5],[69,36.1,1.0,11.3,2.8,7.6,9.8],[50,40.4,0.7,17.4,1.7,5.5,9.8],[74,35.4,0.7,13.9,2.5,5.8,8.2],[54,43.3,0.9,23.5,1.0,3.3,9.3],[93,34.9,1.0,13.1,2.6,4.6,9.5],[125,41.5,0.7,20.0,2.0,4.6,10.1]]},
+    {id:"900024965", name:"Sanguchería Cr 68", d:[[29,63.0,1.1,29.5,2.2,6.4,15.9],[15,57.3,0.7,17.6,2.1,5.0,20.2],[27,57.7,1.0,16.7,1.9,4.7,22.9],[32,59.5,1.0,22.5,2.2,4.4,20.1],[39,53.4,0.9,11.8,2.3,4.0,22.4],[86,62.3,0.7,21.9,2.8,4.3,22.0],[55,66.1,1.5,21.5,3.7,8.1,21.9],[39,70.3,1.3,27.6,1.5,6.8,20.6],[22,70.6,1.5,30.3,2.4,3.7,21.2],[34,55.3,1.6,13.7,2.8,4.6,20.9],[24,55.7,0.6,14.1,2.5,2.9,23.9],[43,57.9,1.5,14.4,2.5,5.3,22.8],[36,65.7,1.2,22.3,1.4,8.1,20.2],[30,62.8,0.7,22.1,2.2,6.6,20.3],[32,62.1,1.2,21.3,2.3,6.5,19.6],[20,59.1,1.1,23.2,2.4,3.0,18.7],[19,55.4,1.0,14.0,2.5,7.6,19.6],[15,58.5,1.0,15.5,3.1,7.8,21.0],[31,64.1,1.0,17.9,2.0,7.7,23.7],[20,59.3,1.0,11.8,1.9,10.3,22.1],[56,62.5,1.0,18.4,1.6,10.1,19.6],[43,55.7,1.3,12.1,1.7,7.2,19.4],[41,57.0,1.6,17.7,2.1,5.7,19.0],[21,51.9,1.2,13.7,3.9,6.1,20.8],[38,59.1,1.1,16.8,2.3,6.8,21.6],[53,54.4,1.2,11.7,2.4,5.8,19.9],[47,55.3,1.3,10.6,2.4,5.7,23.8],[51,57.5,1.1,11.7,2.7,9.6,20.3],[42,51.6,1.2,10.0,2.9,7.6,19.1],[30,58.2,1.3,20.6,1.9,4.0,21.7],[29,60.1,1.0,17.4,2.3,4.4,25.1],[29,55.6,1.2,13.7,3.1,8.0,22.9],[34,55.4,0.9,12.8,2.3,11.1,16.8],[30,56.1,1.0,21.2,1.5,5.2,16.3],[28,50.5,2.2,15.5,2.2,2.7,18.0],[44,58.4,2.6,11.3,4.5,7.2,23.6]]},
+    {id:"900031427", name:"Sanguchería Calle 122", d:[[96,53.5,3.6,28.5,3.9,2.5,11.8],[31,49.7,1.6,22.8,1.6,1.0,15.4],[39,41.5,1.0,11.2,2.3,0.3,19.2],[60,53.4,1.7,26.5,3.5,0.8,15.4],[92,47.7,1.4,22.1,4.2,1.0,14.3],[142,54.9,1.2,30.3,3.9,1.0,13.4],[121,57.0,2.0,27.8,5.4,1.7,16.6],[100,58.8,1.1,29.0,3.9,1.2,17.2],[44,59.5,0.8,34.4,2.5,1.5,14.5],[51,52.0,1.4,20.9,4.0,1.5,18.6],[32,42.7,1.2,11.8,2.8,0.6,17.7],[71,46.4,2.0,13.4,5.1,2.8,16.0],[81,45.0,1.5,15.5,3.5,1.3,16.0],[85,43.9,1.5,14.6,4.8,1.8,14.7],[93,56.1,2.2,26.0,5.3,3.0,14.1],[38,43.3,1.3,14.6,3.9,0.4,15.2],[47,43.8,1.8,14.1,4.6,1.4,16.3],[48,45.9,1.7,17.9,3.9,0.8,15.4],[64,48.1,1.8,11.5,4.5,3.4,18.1],[79,42.1,1.5,12.4,3.6,1.5,15.3],[83,36.1,1.6,6.4,4.5,2.0,13.8],[94,44.1,1.6,11.5,3.3,1.7,17.4],[103,44.7,1.1,14.7,2.7,2.1,14.4],[34,45.4,2.0,27.5,4.4,0.3,10.2],[49,43.1,1.3,15.3,2.7,1.1,14.8],[82,44.7,1.2,17.5,2.4,0.9,14.5],[151,42.7,1.3,13.3,4.5,2.0,14.8],[125,34.4,1.8,6.1,4.8,1.3,14.6],[102,36.6,1.1,7.8,4.7,2.1,14.7],[67,40.5,0.9,15.0,2.5,0.5,13.6],[50,33.2,1.0,6.3,2.3,0.5,14.6],[53,42.3,1.1,13.2,2.8,1.2,15.3],[76,38.5,1.5,10.7,4.2,3.7,12.8],[75,36.0,1.9,8.8,4.1,0.8,13.9],[96,26.0,1.1,3.6,4.3,0.4,11.6],[100,42.8,1.2,10.7,3.1,1.7,15.0]]},
+    {id:"900046854", name:"Sanguchería 85", d:[[51,50.1,1.2,18.8,5.2,3.4,16.0],[34,45.3,0.9,18.0,4.3,3.5,11.2],[34,48.6,1.2,13.9,5.3,3.7,17.5],[36,52.3,1.1,25.1,4.8,2.5,14.6],[84,48.1,1.2,17.2,4.6,4.1,13.7],[122,71.0,1.6,37.0,4.5,4.8,16.1],[70,59.3,1.0,29.4,4.5,3.8,13.7],[43,49.8,1.1,17.8,4.3,5.0,14.6],[16,45.5,0.7,14.6,4.9,1.9,16.0],[40,54.4,1.1,23.0,6.1,3.1,15.9],[35,49.6,1.1,19.2,6.1,3.3,14.5],[68,46.4,1.1,14.2,5.4,2.7,16.4],[74,45.3,1.0,14.7,4.8,5.3,15.2],[71,51.8,1.2,22.2,3.9,2.4,15.5],[42,56.7,1.2,23.8,3.5,4.0,15.4],[28,52.5,1.3,25.0,5.2,2.6,13.8],[38,46.1,1.4,17.0,5.4,3.3,14.9],[40,49.2,1.0,18.8,4.3,3.6,14.1],[79,48.0,1.4,13.4,4.8,3.7,16.3],[94,45.2,1.1,12.5,3.9,2.9,16.1],[96,38.4,1.1,8.9,4.0,3.2,14.4],[84,43.8,1.2,12.7,3.1,3.4,15.2],[64,47.6,1.6,19.0,5.0,3.8,11.8],[33,47.4,1.7,21.2,3.8,2.0,12.5],[54,45.6,0.9,13.6,4.2,2.5,16.7],[93,49.9,1.4,18.2,5.1,2.7,16.3],[122,46.6,1.0,14.2,4.4,4.3,16.0],[101,48.1,1.2,17.3,3.8,3.8,16.2],[79,40.6,0.8,13.7,3.6,2.9,14.5],[40,50.6,0.9,21.4,4.7,3.2,11.8],[38,36.2,0.8,4.7,5.3,2.2,17.1],[44,40.3,1.0,11.3,4.1,2.5,12.8],[2,33.7,0.6,11.3,0.0,7.9,4.9],null,null,null]},
+    {id:"900062127", name:"Sanguchería Parque Colina", d:[[55,66.9,3.6,23.1,5.2,6.7,18.8],[28,53.8,1.2,15.3,3.8,2.5,19.7],[39,41.6,1.1,6.5,4.4,2.0,17.6],[32,52.1,0.9,16.4,5.5,3.2,17.1],[49,44.9,1.3,8.2,5.8,3.9,17.4],[95,59.0,1.2,21.4,3.2,4.1,18.8],[52,56.4,1.0,16.4,6.2,2.9,20.6],[44,59.3,1.3,20.4,4.3,5.1,17.7],[30,54.6,2.6,18.5,2.7,0.8,19.0],[34,48.6,1.0,10.9,5.9,4.1,19.8],[30,51.0,0.8,15.9,3.3,2.5,23.6],[48,49.7,1.7,12.0,5.3,3.5,18.2],[40,51.6,1.9,14.9,6.6,2.5,18.7],[57,56.9,0.7,16.9,3.3,3.1,20.4],[48,59.3,0.9,18.5,4.4,4.1,18.8],[38,60.8,1.4,24.7,5.4,2.6,16.7],[21,49.7,1.4,18.5,5.5,1.4,13.5],[17,51.3,1.0,10.9,3.7,0.7,23.9],[58,52.3,1.2,8.7,3.9,3.3,23.0],[59,53.3,1.4,13.7,4.1,2.6,20.0],[45,47.3,1.9,5.0,7.8,2.7,19.8],[57,61.5,1.2,16.7,2.9,2.7,18.3],[47,60.4,1.1,13.7,3.3,3.5,23.4],[17,36.0,1.2,3.7,4.9,0.7,16.6],[56,41.7,1.1,6.5,4.7,2.5,18.6],[44,49.7,1.2,12.8,4.8,2.2,18.2],[89,59.8,1.0,19.6,2.7,1.1,17.6],[102,53.2,1.1,9.9,3.0,0.9,21.1],[61,59.0,1.2,13.8,3.2,0.7,20.2],[38,41.7,1.0,7.2,3.5,0.8,18.6],[28,44.1,0.7,8.6,2.4,0.6,17.7],[26,50.6,1.2,9.0,3.8,1.2,21.0],[47,48.8,0.9,10.1,6.0,1.8,19.6],[35,48.7,1.2,13.1,5.5,0.3,17.7],[41,40.0,0.9,5.9,6.3,0.6,18.0],[65,49.1,1.9,10.7,6.0,1.0,18.2]]},
+    {id:"900411559", name:"Sanguchería Mall Plaza", d:[[17,95.7,4.5,43.5,4.3,4.1,28.0],[13,72.7,1.3,36.2,3.5,1.4,24.4],[22,59.7,3.1,14.4,3.2,2.5,26.4],[20,56.9,1.3,19.8,2.2,0.9,20.6],[25,65.8,1.6,22.7,1.6,2.0,24.4],[52,68.9,2.4,21.1,3.7,2.9,27.8],[28,85.1,1.9,33.0,2.0,5.2,29.9],[22,71.9,2.7,29.1,4.5,3.4,24.9],[15,74.0,1.9,32.5,2.3,1.1,24.6],[17,70.2,2.4,23.9,2.4,2.1,25.1],[25,67.6,1.8,21.0,3.6,2.8,26.3],[11,59.5,1.4,24.7,4.9,2.3,18.3],[22,73.6,2.8,27.4,3.7,3.7,24.7],[14,74.8,2.0,25.4,3.1,1.6,28.5],[9,86.5,1.6,46.5,1.5,2.7,31.8],[16,72.8,1.5,25.2,2.9,2.2,34.3],[27,65.4,1.8,22.6,4.2,3.3,25.2],[11,85.7,3.4,41.8,4.3,1.2,25.6],[21,74.8,1.2,27.8,2.4,5.8,24.6],[26,59.8,3.4,15.8,2.8,1.4,24.1],[19,67.2,2.8,24.4,2.6,5.8,21.2],[26,67.5,3.4,23.0,3.1,2.5,24.7],[15,77.5,1.7,35.1,0.7,1.8,21.8],[9,78.0,3.1,48.9,2.8,3.7,20.1],[19,66.8,1.6,21.5,1.5,1.1,24.4],[22,69.2,1.7,28.2,3.3,1.2,25.0],[28,73.4,1.2,21.8,4.1,4.2,29.3],[37,76.9,0.9,30.4,1.8,2.4,29.1],[24,76.5,0.7,35.3,1.1,3.1,20.8],[15,76.7,1.2,26.9,1.5,2.0,25.9],[27,66.1,1.2,19.9,2.9,3.7,25.7],[17,61.1,2.2,13.1,4.9,1.5,27.3],[29,53.1,1.6,8.7,3.9,1.5,24.7],[13,57.9,3.4,19.0,5.9,0.4,21.6],[41,59.3,1.7,18.0,2.4,1.1,23.2],[22,66.9,1.5,22.9,3.0,3.5,23.0]]},
+  ],
+  [
+    {id:"900378995", name:"La Lucha Turbo (Kraken)", d:[[25,17.5,1.3,1.2,0.5,8.7,3.9],[23,15.0,0.6,1.8,0.2,6.6,4.1],[26,18.3,1.2,2.7,0.5,8.2,4.5],[55,19.6,0.7,5.3,0.2,6.8,4.4],[36,19.8,1.0,1.8,0.5,10.1,4.0],[41,20.2,0.8,2.5,0.2,10.2,4.8],[31,18.7,0.6,0.7,0.2,10.2,4.9],[21,18.4,0.8,1.6,0.1,9.0,4.3],[33,20.7,0.8,6.3,0.4,6.4,5.3],[31,23.6,0.8,8.4,0.2,8.0,4.2],[34,20.7,0.8,2.5,0.1,8.3,5.5],[35,21.2,0.8,1.3,0.2,8.4,4.8],[33,20.7,0.8,2.8,0.3,10.2,4.8],[21,17.7,0.7,1.2,0.3,9.1,4.2],[27,15.1,0.8,0.2,0.4,9.1,3.2],[23,18.5,0.7,2.3,0.2,8.0,4.4],[26,18.5,0.7,5.6,0.1,6.0,5.8],[6,16.3,1.5,1.4,0.8,8.6,3.2],[2,15.6,2.4,0.5,1.4,5.2,1.8],[3,17.1,0.3,0.1,0.1,11.8,2.6],null,null,null,null,null,[36,18.9,0.6,3.1,0.1,5.1,4.9],[40,13.6,0.7,1.9,0.2,4.7,4.4],[27,11.2,0.5,0.3,0.3,4.7,4.1],[22,12.6,0.7,0.3,0.4,6.3,3.9],[29,14.0,0.6,1.3,0.2,6.0,4.2],[17,14.3,0.6,0.3,0.3,7.7,3.0],[13,10.9,0.4,0.2,0.1,3.8,3.7],[6,11.3,0.5,0.7,0.0,4.1,3.6],[3,9.9,0.4,0.1,0.2,5.1,2.6],[1,9.6,1.7,0.5,0.0,0.7,4.2],[4,11.6,0.5,0.2,0.2,7.0,2.9]]},
+    {id:"900381065", name:"Turbo Calle 122", d:[[91,22.1,1.9,6.4,0.4,4.4,6.6],[81,25.5,1.5,8.9,0.4,4.6,7.8],[114,16.5,0.9,1.1,0.1,2.6,8.5],[152,21.7,1.1,5.0,0.3,3.0,7.9],[150,19.2,1.1,3.0,0.3,3.6,7.8],[180,20.9,1.0,5.0,0.2,3.2,7.9],[111,19.9,1.6,3.6,0.6,3.7,7.6],[133,21.2,1.0,4.6,0.1,2.8,7.9],[81,21.5,0.8,6.5,0.0,2.5,8.2],[128,24.4,1.0,8.9,0.1,2.7,8.3],[163,20.4,0.9,4.3,0.1,2.7,7.8],[136,19.1,1.2,1.5,0.2,4.8,8.3],[158,18.3,1.0,2.3,0.2,3.5,7.3],[147,17.9,1.0,1.7,0.1,3.8,7.1],[157,21.6,1.3,4.8,0.6,4.8,6.9],[115,20.5,0.9,5.9,0.9,1.9,6.9],[108,19.5,1.4,3.1,1.2,3.4,7.4],[140,27.4,1.4,11.7,0.7,2.7,7.9],[151,19.8,1.4,1.3,1.3,5.8,7.1],[196,16.7,1.1,0.7,1.3,3.2,7.6],[129,16.4,1.0,1.0,1.8,3.1,7.0],[144,17.3,1.1,1.5,1.6,3.4,6.9],[157,15.3,1.1,0.8,1.4,3.1,6.3],[81,23.0,1.8,6.7,1.2,1.6,8.6],[177,18.7,0.9,2.9,0.8,1.7,8.2],[165,18.9,0.8,4.1,0.8,2.2,7.6],[196,16.9,0.9,1.5,1.2,2.7,7.2],[176,15.1,1.0,0.5,1.6,2.9,6.8],[167,15.2,1.0,0.6,1.8,3.1,6.5],[144,14.2,0.8,0.5,1.2,1.6,6.8],[130,14.8,1.1,0.8,1.4,2.1,6.8],[134,13.9,1.0,0.9,1.4,2.4,6.0],[97,15.6,1.0,0.7,1.8,4.1,5.9],[123,16.5,1.3,3.9,1.5,2.4,5.5],[79,12.7,0.8,0.3,1.9,1.5,5.8],[170,13.9,0.8,0.7,1.5,2.6,5.9]]},
+    {id:"900431897", name:"Turbo 85", d:[[51,13.3,1.2,0.9,0.1,4.4,4.5],[43,15.1,0.8,0.9,0.1,5.8,5.1],[34,16.8,0.9,0.5,0.0,6.4,6.0],[55,14.8,0.9,0.3,0.1,5.6,5.6],[63,15.8,0.8,0.6,0.1,6.7,5.0],[75,23.0,1.6,4.2,0.5,8.9,5.6],[45,21.2,1.0,6.7,0.1,7.2,5.0],[55,16.7,0.9,1.7,0.1,6.1,4.9],[53,15.4,0.8,1.5,0.1,4.4,5.7],[57,17.0,0.8,0.7,0.0,5.2,6.7],[52,17.8,1.0,0.4,0.2,7.4,5.9],[52,15.5,0.8,0.9,0.0,5.5,5.3],[50,18.9,0.7,2.1,0.1,6.5,5.5],[29,18.2,0.7,1.7,0.1,7.3,5.5],[43,15.6,0.9,1.7,0.1,6.0,4.4],[22,16.1,0.9,0.4,0.1,6.9,5.3],[37,14.5,0.9,0.6,0.2,5.0,5.1],[11,17.2,1.3,0.4,0.2,5.3,5.9],null,null,null,[1,10.9,0.9,0.1,0.0,6.0,2.2],[2,13.2,1.6,6.2,0.0,2.0,1.7],null,null,[36,15.8,0.8,0.7,0.1,5.1,6.0],[49,17.5,0.9,1.2,0.1,6.6,5.2],[28,14.8,1.0,0.5,0.1,5.7,5.1],[24,13.1,0.9,0.3,0.1,5.9,3.9],[26,14.5,0.7,0.5,0.0,5.6,4.7],[17,11.8,0.8,0.2,0.2,3.9,4.1],[13,15.2,0.7,1.5,0.1,6.5,4.1],null,null,null,null]},
+  ],
+  [
+    {id:"900412794", name:"Desayunos 93 - Turbo", d:[[4,22.8,3.2,0.4,0.7,9.9,4.7],[5,20.2,0.5,3.2,0.0,9.7,5.5],[2,13.1,1.1,0.1,0.5,6.0,4.8],[4,12.6,1.0,0.1,1.3,6.5,4.0],[1,12.9,0.9,0.0,0.8,9.0,1.8],[1,22.4,2.2,0.2,1.7,12.2,6.8],[5,21.1,0.3,0.1,0.3,12.5,4.6],[6,14.8,1.0,0.2,0.8,7.7,4.7],[1,13.6,0.5,5.2,0.0,5.1,1.7],[4,14.8,1.0,3.6,0.6,7.6,1.7],[6,13.1,0.8,0.1,0.4,4.6,5.6],[5,16.0,0.5,0.1,0.5,11.1,2.6],[1,12.7,0.5,0.2,0.6,8.6,2.5],[4,21.8,0.8,0.1,0.6,14.5,4.9],[3,11.7,0.8,0.1,0.2,5.8,3.0],[4,15.2,1.0,0.4,0.0,7.7,3.7],[4,17.2,0.9,0.2,0.8,10.9,4.2],[6,17.3,1.4,0.4,0.5,8.5,4.1],null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]},
+    {id:"900469582", name:"Desayunos Calle 122 - Turbo", d:[[9,21.0,5.8,1.0,3.6,1.9,8.3],[14,17.6,2.1,0.3,1.2,5.6,8.1],[5,21.8,2.0,0.1,1.5,8.5,9.9],[9,16.5,1.3,0.1,0.8,7.8,7.1],[5,17.0,2.6,0.1,2.8,5.8,7.4],[13,17.4,2.5,0.5,1.9,6.8,6.9],[17,22.2,4.5,0.4,3.1,8.4,6.3],[12,16.1,2.2,0.1,1.4,6.2,5.6],[5,16.3,0.8,1.9,0.5,5.0,7.3],[9,15.0,1.3,0.2,0.5,4.6,7.3],[3,18.1,2.7,2.3,0.0,2.7,7.0],[11,16.4,1.9,1.0,0.6,3.5,7.9],[8,17.0,1.9,0.1,1.1,5.7,7.5],[11,17.5,2.4,1.7,1.1,5.5,6.6],[18,18.1,2.5,1.2,1.2,7.1,6.2],[7,16.9,2.0,0.4,2.7,3.1,7.5],[11,13.8,0.8,0.5,3.4,2.4,6.4],[17,22.9,1.7,2.7,1.8,5.5,9.3],[10,17.6,1.8,0.6,2.5,5.0,6.3],[7,14.8,1.3,0.1,3.6,3.0,6.0],[13,16.9,1.3,0.5,1.6,5.2,5.7],[6,19.4,2.0,1.0,3.1,6.1,6.7],[10,16.6,1.9,0.5,1.8,5.0,5.2],[11,13.1,1.6,0.2,4.3,1.4,6.1],[5,15.5,2.2,0.1,3.7,1.9,6.8],[3,14.4,1.0,0.1,2.7,2.8,6.2],[4,14.8,0.6,0.0,1.4,3.4,6.9],[6,14.4,1.4,0.1,3.2,3.3,5.5],[5,17.0,1.2,0.1,2.6,5.7,5.8],[8,14.8,1.6,1.3,1.7,3.6,4.6],[4,16.7,2.8,0.0,5.4,4.1,5.9],[5,11.6,0.8,0.1,2.6,2.5,4.4],[5,10.5,0.7,0.3,2.9,2.4,3.3],[3,15.1,1.7,0.1,5.1,3.0,3.1],[1,14.3,0.6,0.1,2.2,3.5,6.0],[2,10.4,0.6,0.1,2.8,2.5,3.1]]},
+    {id:"900481280", name:"Desayunos 85 - Turbo", d:[null,null,null,null,null,null,[3,8.4,0.7,4.2,2.0,6.7,2.9],[4,19.0,0.7,0.5,1.7,4.7,9.2],[10,19.6,1.2,3.2,1.3,6.9,7.2],[6,15.6,1.2,0.7,1.5,2.3,7.2],[8,22.5,1.0,0.5,0.4,6.5,8.7],[4,12.3,1.3,2.6,2.1,7.2,2.7],[6,15.2,0.9,0.5,1.4,3.7,6.3],[2,20.3,0.8,0.3,0.8,7.7,7.7],[9,20.9,0.9,0.2,2.1,9.3,7.3],[6,16.7,1.1,0.7,1.6,1.4,9.3],[10,17.9,0.8,1.7,1.3,5.4,6.1],[18,17.3,1.3,1.5,0.9,2.0,7.5],[11,16.3,0.8,0.4,1.8,5.9,5.2],[13,19.3,1.0,1.1,1.8,4.4,8.0],[20,16.0,1.3,1.4,1.9,3.4,6.0],[24,18.1,1.1,1.5,1.8,4.5,7.4],[31,20.0,1.1,7.3,1.1,3.4,5.2],[25,19.2,0.9,3.4,0.8,3.4,7.3],[31,21.3,0.9,4.8,1.1,4.7,6.1],[28,18.0,0.8,2.7,1.0,2.6,7.4],[24,16.3,0.8,1.8,1.0,3.7,6.0],[19,16.3,1.3,1.5,1.4,3.7,6.5],[9,13.4,1.0,0.1,2.7,4.7,5.0],[23,17.7,1.5,2.8,1.4,3.3,6.4],[14,13.4,1.0,0.5,1.6,3.1,4.7],[19,18.1,2.0,0.3,2.7,6.4,5.6],null,null,null,null]},
+  ],
+  [
+    {id:"900369919", name:"Desayunos 85", d:[null,null,[2,30.9,0.5,6.2,6.4,0.1,13.2],[3,25.5,0.6,10.3,8.4,0.2,5.5],[3,44.9,0.9,21.0,3.8,2.8,6.8],[3,59.7,0.8,43.8,7.0,0.0,10.0],[1,33.0,0.8,12.2,4.6,0.0,5.5],[3,41.6,1.9,5.1,6.5,4.3,14.5],null,[1,36.4,0.5,5.9,0.7,0.0,18.1],null,[4,45.4,0.8,11.4,3.0,2.0,16.3],[1,50.4,0.4,25.5,6.9,0.0,12.1],[1,45.5,1.9,15.6,14.8,3.7,8.7],[2,64.7,1.3,28.7,5.4,0.8,22.5],null,[1,25.4,0.8,1.1,5.8,0.0,13.5],null,[1,31.5,0.7,1.3,0.0,1.0,3.8],[2,28.8,1.5,7.2,4.9,0.0,9.3],null,[2,50.6,0.7,13.3,11.1,7.2,15.3],[1,48.5,1.3,19.3,6.7,0.0,17.6],[2,45.5,0.5,12.3,4.1,0.0,26.1],[2,36.8,0.8,8.2,3.8,4.0,9.5],[2,32.2,1.0,0.6,6.9,1.3,20.7],[1,32.4,0.4,9.4,8.5,0.0,9.1],[1,79.1,2.8,25.6,6.0,0.0,40.3],[3,60.1,1.0,22.2,8.8,3.5,17.2],[1,34.5,0.9,1.5,0.0,1.1,2.4],null,null,null,null,null,null]},
+    {id:"900369920", name:"Desayunos Parque Colina", d:[null,null,null,null,null,null,[1,31.6,5.0,0.5,5.9,0.0,17.8],null,null,[1,35.2,2.3,8.1,4.1,3.2,11.3],null,null,null,[3,41.7,1.1,6.6,1.2,3.6,17.9],[2,43.4,0.5,15.2,3.9,0.3,16.3],[1,55.4,0.7,3.2,6.7,8.5,30.1],null,null,[1,42.7,2.5,2.5,2.6,3.1,19.9],null,[2,53.6,1.2,12.3,0.0,1.4,29.6],null,null,null,[1,29.4,0.7,3.7,5.4,0.0,16.6],null,[1,53.6,1.0,4.0,5.3,0.0,41.0],null,[1,47.3,4.3,6.2,14.3,0.0,17.7],null,null,[1,27.8,0.9,2.3,15.3,0.0,7.8],[1,21.7,1.7,1.2,9.9,0.0,7.6],[1,39.2,0.4,5.2,1.4,0.0,13.0],[1,36.9,1.3,10.1,1.0,0.0,12.1],[2,41.1,0.7,11.8,7.4,0.0,12.1]]},
+    {id:"900369921", name:"Desayunos Cra 68", d:[[2,66.6,1.3,30.9,4.4,6.9,9.2],[1,66.1,2.7,21.3,3.4,0.0,30.7],[3,37.9,1.3,10.4,6.0,0.6,14.3],[2,54.2,1.1,22.0,1.0,4.0,22.0],[2,45.9,0.6,19.2,0.9,0.5,10.9],[3,70.1,0.9,20.4,1.6,4.1,30.1],[3,50.6,0.9,13.2,3.2,3.0,17.5],null,null,null,[1,54.9,2.3,7.1,1.9,1.2,33.5],null,null,[3,35.8,0.9,6.0,3.6,2.5,10.6],null,null,null,[1,41.3,0.6,5.3,3.9,0.0,22.4],[1,28.7,0.3,10.3,0.5,0.0,7.6],[2,41.5,2.3,1.9,5.8,2.2,18.2],[1,49.8,0.4,9.3,4.9,10.4,14.0],[1,29.4,1.0,4.1,0.0,8.4,8.3],[2,35.8,1.4,7.1,11.5,1.9,10.5],[2,56.1,1.3,4.4,0.0,7.3,22.7],[2,70.0,0.6,17.2,0.3,0.4,29.1],[1,32.7,0.7,5.4,4.7,0.0,13.8],[1,74.2,1.1,31.3,0.0,2.9,31.9],[2,41.9,1.1,1.6,4.0,14.2,10.0],[2,48.0,2.3,7.4,2.3,3.4,25.2],null,[1,44.2,1.5,19.2,0.0,6.3,12.3],[5,56.1,2.8,8.5,6.7,13.8,15.4],[1,56.3,0.8,26.2,0.0,5.8,8.7],null,[1,50.9,2.9,6.4,1.6,0.0,28.2],[1,58.5,12.4,2.1,0.0,1.1,20.3]]},
+    {id:"900369922", name:"Desayunos 93", d:[[1,95.6,0.5,54.5,8.7,0.0,27.4],null,null,[1,56.2,0.5,22.3,12.2,0.0,19.8],null,null,null,null,null,[3,89.9,0.7,55.8,8.2,13.3,9.8],null,[2,37.6,0.4,7.6,8.1,2.8,14.4],[1,38.7,0.5,21.1,1.4,0.0,10.5],[3,36.7,1.2,14.8,8.8,6.2,8.1],[1,60.3,0.5,40.1,4.7,0.0,8.3],null,[2,34.4,1.0,9.6,9.1,3.1,11.1],[1,47.9,0.5,1.2,0.0,1.1,21.5],[2,39.5,2.4,12.7,13.5,3.3,7.4],[1,28.6,0.7,16.1,7.4,0.0,3.4],[1,54.2,2.0,1.3,8.6,34.0,2.8],null,[1,63.6,1.5,42.1,6.2,0.0,5.8],[2,24.5,0.8,9.9,0.8,2.1,4.5],null,[4,42.3,1.3,20.6,0.0,1.5,13.3],null,[1,30.9,0.7,21.1,0.0,3.1,4.2],null,null,[1,26.5,0.8,10.1,3.1,3.1,8.0],[3,33.2,1.3,13.4,4.8,2.9,7.9],[3,32.2,0.4,6.1,5.4,8.6,9.3],[1,43.0,0.7,22.5,0.0,0.8,14.4],[2,21.4,1.4,11.7,1.5,1.0,3.3],[6,50.2,0.9,33.8,0.0,1.3,9.9]]},
+    {id:"900467176", name:"Desayunos Calle 122", d:[[1,60.6,1.7,32.3,8.3,0.0,15.3],[1,14.3,6.3,1.5,5.7,0.0,2.7],null,[1,39.8,1.8,16.2,5.3,0.0,11.4],[2,26.0,2.5,0.9,5.1,0.0,14.8],[4,44.4,2.5,21.7,9.3,0.8,11.6],[3,52.8,1.3,28.3,4.7,3.6,9.7],[4,37.6,2.3,9.6,6.1,1.0,15.4],null,null,[2,41.0,2.2,7.2,5.2,0.0,23.8],[1,15.2,0.7,0.1,0.6,0.0,2.5],[4,28.5,3.3,3.7,7.5,0.0,13.0],[4,26.5,1.3,3.8,4.1,0.0,12.9],[3,61.7,2.4,36.0,4.4,0.5,16.0],[3,32.8,3.0,26.2,4.5,0.8,12.6],null,[3,30.3,0.7,3.2,2.1,0.4,12.9],[5,58.3,1.7,28.7,2.2,0.2,19.7],[1,17.9,2.5,0.3,6.8,0.0,7.4],[5,46.7,3.0,13.6,5.0,1.0,20.7],[1,41.6,3.8,14.1,4.6,2.5,12.7],null,null,[2,28.1,0.6,7.0,5.3,0.0,10.4],null,null,[5,37.5,1.3,10.9,6.2,0.2,11.6],[4,37.9,1.2,11.4,3.2,0.1,14.4],[1,36.1,0.4,0.2,0.0,0.8,13.9],null,[3,41.1,1.2,20.2,2.7,0.4,11.2],[1,26.9,0.8,0.2,0.0,0.9,9.5],[3,31.7,2.6,3.2,5.7,0.0,11.4],null,[1,26.0,0.9,1.3,10.1,0.0,13.0]]},
+    {id:"900467177", name:"Desayunos Mall Plaza", d:[[1,97.0,4.8,70.4,0.0,0.0,0.0],[1,50.5,1.8,13.2,0.0,1.0,21.0],[1,74.5,5.0,17.2,0.0,0.9,37.2],null,[2,81.1,2.2,32.1,0.0,2.5,20.6],null,[2,61.2,1.4,29.8,0.0,2.7,16.0],[2,55.5,1.3,22.6,0.0,1.1,19.3],[2,60.8,0.6,23.5,0.0,0.5,21.3],[1,111.0,2.8,69.2,0.0,0.3,25.0],null,[2,56.0,0.6,18.6,0.0,0.7,16.9],null,null,null,[2,61.1,1.9,22.8,0.0,1.5,22.0],[1,68.5,1.8,26.4,0.0,9.7,21.5],null,null,null,[1,75.6,1.0,21.3,0.0,1.5,32.4],[1,97.9,1.4,67.2,0.0,1.3,10.9],[1,70.2,1.0,15.5,0.0,1.8,35.9],null,null,[1,36.7,3.3,7.1,0.0,1.3,8.4],null,[2,59.7,0.5,8.1,0.0,1.5,32.1],[1,33.1,2.0,0.5,12.4,0.0,16.9],null,[1,69.4,1.8,16.6,0.0,0.6,32.4],[2,88.6,0.7,56.7,0.0,2.1,23.2],[1,44.0,0.3,2.1,5.9,4.3,22.8],null,[1,40.9,0.4,0.7,10.0,2.2,21.5],null]},
+  ]
+];
+
+/* ─── App state ─── */
+const charts = [null, null, null, null];
+const filterState = ['all','all','all','all'];
+let granularity = 'weekly';
+let activeTab = 0;
+
+/* ─── Daily brand aggregate (weighted by orders) ─── */
+function getDailyBrandData(bi) {
+  const numDays = DAILY_DAYS.length;
+  const out = { int:[], rw:[], rp:[], ra:[], del:[], e2e:[] };
+  for (let di = 0; di < numDays; di++) {
+    let totalOrders=0, sumInt=0, sumRw=0, sumRp=0, sumRa=0, sumDel=0, sumE2e=0, hasData=false;
+    DAILY_STORES[bi].forEach(s => {
+      const row = s.d[di];
+      if (row) {
+        const n = row[0];
+        totalOrders += n;
+        sumE2e += row[1]*n; sumInt += row[2]*n; sumRw += row[3]*n;
+        sumRp  += row[4]*n; sumRa  += row[5]*n; sumDel += row[6]*n;
+        hasData = true;
+      }
+    });
+    if (hasData && totalOrders > 0) {
+      const r = v => parseFloat((v/totalOrders).toFixed(1));
+      out.e2e.push(r(sumE2e)); out.int.push(r(sumInt)); out.rw.push(r(sumRw));
+      out.rp.push(r(sumRp));   out.ra.push(r(sumRa));   out.del.push(r(sumDel));
+    } else {
+      out.e2e.push(null); out.int.push(null); out.rw.push(null);
+      out.rp.push(null);  out.ra.push(null);  out.del.push(null);
+    }
+  }
+  return out;
+}
+
+/* ─── Get chart data for a brand/filter/granularity ─── */
+function getChartData(bi, storeId) {
+  if (granularity === 'weekly') {
+    if (storeId === 'all') {
+      const b = BRAND[bi];
+      return { int:b.int, rw:b.rw, rp:b.rp, ra:b.ra, del:b.del, e2e:b.e2e };
+    }
+    const s = STORES[bi].find(x => x.id === storeId);
+    const out = { int:[], rw:[], rp:[], ra:[], del:[], e2e:[] };
+    W.forEach((_, wi) => {
+      const row = s.d[wi];
+      if (row) { out.int.push(row[2]); out.rw.push(row[3]); out.rp.push(row[4]); out.ra.push(row[5]); out.del.push(row[6]); out.e2e.push(row[1]); }
+      else      { out.int.push(null);  out.rw.push(null);   out.rp.push(null);   out.ra.push(null);   out.del.push(null);   out.e2e.push(null); }
+    });
+    return out;
+  } else {
+    // daily
+    if (storeId === 'all') return getDailyBrandData(bi);
+    const s = DAILY_STORES[bi].find(x => x.id === storeId);
+    if (!s) return getDailyBrandData(bi);
+    const out = { int:[], rw:[], rp:[], ra:[], del:[], e2e:[] };
+    DAILY_DAYS.forEach((_, di) => {
+      const row = s.d[di];
+      if (row) { out.int.push(row[2]); out.rw.push(row[3]); out.rp.push(row[4]); out.ra.push(row[5]); out.del.push(row[6]); out.e2e.push(row[1]); }
+      else      { out.int.push(null);  out.rw.push(null);   out.rp.push(null);   out.ra.push(null);   out.del.push(null);   out.e2e.push(null); }
+    });
+    return out;
+  }
+}
+
+/* ─── Cooking residual (fills gap to E2E) ─── */
+function addCooking(d) {
+  d.cok = d.e2e.map((e,i) => e == null ? null :
+    Math.max(0, parseFloat((e - d.int[i] - d.rw[i] - d.rp[i] - d.ra[i] - d.del[i]).toFixed(1))));
+  return d;
+}
+
+/* ─── Get last non-null KPI values ─── */
+function getKPI(bi, storeId) {
+  const d = getChartData(bi, storeId);
+  const labels = granularity === 'weekly' ? W : DAILY_DAYS;
+  let idx = labels.length - 1;
+  while (idx >= 0 && d.e2e[idx] == null) idx--;
+  return { e2e:d.e2e[idx], int:d.int[idx], rw:d.rw[idx], rp:d.rp[idx], ra:d.ra[idx], del:d.del[idx], label:labels[idx] };
+}
+
+/* ─── SLA helpers ─── */
+function slaClass(val, threshold) {
+  if (val == null) return '';
+  return val > threshold*1.3 ? 'crit' : val > threshold ? 'warn' : 'ok';
+}
+function slaNote(val, threshold) {
+  if (val == null) return '—';
+  if (val > threshold*1.3) return `SLA <${threshold} 🔴`;
+  if (val > threshold)     return `SLA <${threshold} ⚠️`;
+  return `SLA <${threshold} ✅`;
+}
+
+/* ─── KPI cards ─── */
+function renderKPIs(bi, storeId) {
+  const k = getKPI(bi, storeId);
+  const el = document.getElementById(`kpis-${bi}`);
+  const fmt = v => v != null ? v.toFixed(1) : '—';
+  el.innerHTML = `
+    <div class="kpi ${slaClass(k.e2e,SLA.e2e)}"><div class="kl">E2E (${k.label})</div><div class="kv">${fmt(k.e2e)}<small> min</small></div><div class="kn">${slaNote(k.e2e,SLA.e2e)}</div></div>
+    <div class="kpi ${slaClass(k.int,SLA.int)}"><div class="kl">Integration</div><div class="kv">${fmt(k.int)}<small> min</small></div><div class="kn">${slaNote(k.int,SLA.int)}</div></div>
+    <div class="kpi ${k.rw > 5 ? 'crit' : k.rw > 3 ? 'warn' : 'ok'}"><div class="kl">Rest Wait RT</div><div class="kv">${fmt(k.rw)}<small> min</small></div><div class="kn">Asignación RT</div></div>
+    <div class="kpi ${slaClass(k.rp,SLA.rp)}"><div class="kl">RTWT Perm</div><div class="kv">${fmt(k.rp)}<small> min</small></div><div class="kn">${slaNote(k.rp,SLA.rp)}</div></div>
+    <div class="kpi ${slaClass(k.ra,SLA.ra)}"><div class="kl">RTWT After</div><div class="kv">${fmt(k.ra)}<small> min</small></div><div class="kn">${slaNote(k.ra,SLA.ra)}</div></div>
+    <div class="kpi ${slaClass(k.del,SLA.del)}"><div class="kl">Delivery</div><div class="kv">${fmt(k.del)}<small> min</small></div><div class="kn">${slaNote(k.del,SLA.del)}</div></div>`;
+}
+
+/* ─── Label helper for datalabels ─── */
+function lbl(min) {
+  return {
+    display: ctx => { const v = ctx.dataset.data[ctx.dataIndex]; return v != null && v >= min; },
+    color:'#fff', font:{size:10,weight:'800'}, formatter: v => v.toFixed(1),
+    anchor:'center', align:'center', textShadowBlur:4, textShadowColor:'rgba(0,0,0,.4)'
   };
+}
 
-  new Chart(ctx, {
-    data: {
-      labels: WEEKS,
-      datasets: [
-        { type:'bar',  label:'Integration', data:d.integration, backgroundColor:C.integration, stack:'s', datalabels:barLabel },
-        { type:'bar',  label:'Rest_Wait_RT',data:d.restWait,    backgroundColor:C.restWait,    stack:'s', datalabels:barLabel },
-        { type:'bar',  label:'RTWT_perm',   data:d.rtwtPerm,    backgroundColor:C.rtwtPerm,    stack:'s', datalabels:barLabel },
-        { type:'bar',  label:'RTWT_after',  data:d.rtwtAfter,   backgroundColor:C.rtwtAfter,   stack:'s', datalabels:barLabel },
-        { type:'bar',  label:'Delivery',    data:d.delivery,    backgroundColor:C.delivery,    stack:'s', datalabels:barLabel },
-        {
-          type:'line', label:'E2E',
-          data:d.e2e,
-          borderColor:C.e2e,
-          backgroundColor:'transparent',
-          borderWidth:3,
-          pointBackgroundColor:C.e2e,
-          pointBorderColor:'#fff',
-          pointBorderWidth:2,
-          pointRadius:6,
-          tension:.35,
-          datalabels:{
-            display:true,
-            color:C.e2e,
-            font:{size:12,weight:'900'},
-            anchor:'end', align:'top', offset:4,
-            formatter: v => v.toFixed(1)
-          }
-        }
-      ]
-    },
+/* ─── Build / recreate chart ─── */
+function updateChart(bi, storeId) {
+  const d = addCooking(getChartData(bi, storeId));
+  const labels = granularity === 'weekly' ? W : DAILY_DAYS;
+  const maxE2E = Math.max(...d.e2e.filter(v => v != null));
+  const isDaily = granularity === 'daily';
+
+  /* Segment order: Integration → Cocina → Rest_Wait_RT → RTWT_perm → RTWT_after → Delivery */
+  const datasets = [
+    { type:'bar',  label:'Integration',  data:d.int, backgroundColor:P.int, stack:'s', categoryPercentage:.72, barPercentage:.88, datalabels:lbl(1.2) },
+    { type:'bar',  label:'Cocina',       data:d.cok, backgroundColor:P.cok, stack:'s', categoryPercentage:.72, barPercentage:.88, datalabels:lbl(1.5) },
+    { type:'bar',  label:'Rest_Wait_RT', data:d.rw,  backgroundColor:P.rw,  stack:'s', categoryPercentage:.72, barPercentage:.88, datalabels:lbl(1.5) },
+    { type:'bar',  label:'RTWT_perm',    data:d.rp,  backgroundColor:P.rp,  stack:'s', categoryPercentage:.72, barPercentage:.88, datalabels:lbl(1.5) },
+    { type:'bar',  label:'RTWT_after',   data:d.ra,  backgroundColor:P.ra,  stack:'s', categoryPercentage:.72, barPercentage:.88, datalabels:lbl(1.5) },
+    { type:'bar',  label:'Delivery',     data:d.del, backgroundColor:P.del, stack:'s', categoryPercentage:.72, barPercentage:.88, datalabels:lbl(1.5) },
+    { type:'line', label:'E2E', data:d.e2e, borderColor:P.e2e, backgroundColor:'transparent',
+      borderWidth:3, pointBackgroundColor:P.e2e, pointBorderColor:'#fff', pointBorderWidth:2.5,
+      pointRadius: isDaily ? 3 : 6, tension:.3, spanGaps:false, order:0,
+      datalabels:{ display: isDaily ? false : true, color:P.e2e, font:{size:12,weight:'900'},
+        anchor:'end', align:'top', offset:5, formatter:v => v != null ? v.toFixed(1) : '' } }
+  ];
+
+  // Always destroy + recreate (handles label-count change between daily/weekly)
+  if (charts[bi]) { charts[bi].destroy(); charts[bi] = null; }
+
+  const ctx = document.getElementById(`c${bi}`).getContext('2d');
+  charts[bi] = new Chart(ctx, {
+    data: { labels, datasets },
     options: {
       responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ top: isDaily ? 10 : 28, right:12 } },
       interaction:{ mode:'index' },
-      layout:{ padding:{ top:30 } },
       plugins:{
-        legend:{
-          position:'top',
-          labels:{
-            usePointStyle:true,
-            pointStyle:'rectRounded',
-            font:{size:12,weight:'600'},
-            padding:18,
-            color:'#374151'
-          }
-        },
-        tooltip:{
-          backgroundColor:'rgba(15,23,42,.9)',
-          titleColor:'#f8fafc',
-          bodyColor:'#cbd5e1',
-          padding:12,
-          callbacks:{
-            label: ctx => `  ${ctx.dataset.label}: ${ctx.parsed.y} min`
-          }
-        },
+        legend:{ position:'bottom', align:'center',
+          labels:{ usePointStyle:true, pointStyle:'rectRounded', font:{size:12,weight:'600'}, padding:18, color:'#374151', boxWidth:12, boxHeight:12 } },
+        tooltip:{ backgroundColor:'rgba(15,23,42,.92)', titleColor:'#f8fafc', bodyColor:'#cbd5e1',
+          padding:12, cornerRadius:8,
+          callbacks:{ label: c => `  ${c.dataset.label}: ${c.parsed.y != null ? c.parsed.y.toFixed(1) : '—'} min` } },
         datalabels:{}
       },
       scales:{
-        x:{
-          stacked:true,
-          grid:{ display:false },
-          ticks:{ font:{size:11}, color:'#64748b' },
-          border:{ color:'#e2e8f0' }
-        },
-        y:{
-          stacked:false,
-          beginAtZero:true,
-          grid:{ color:'#f1f5f9', lineWidth:1 },
-          ticks:{
-            font:{size:11}, color:'#64748b',
-            callback: v => v + ' min'
-          },
-          border:{ color:'#e2e8f0', dash:[4,4] },
-          title:{ display:true, text:'Minutos', font:{size:10}, color:'#94a3b8' }
-        }
+        x:{ stacked:true, grid:{display:false}, border:{color:'#e2e8f0'},
+            ticks:{ font:{size: isDaily ? 8 : 11}, color:'#64748b',
+                    maxRotation: isDaily ? 45 : 0, maxTicksLimit: isDaily ? 18 : 20 } },
+        y:{ stacked:true, beginAtZero:true, suggestedMax: maxE2E * 1.25,
+            grid:{color:'#f1f5f9'}, border:{color:'#e2e8f0',dash:[3,3]},
+            ticks:{ font:{size:11}, color:'#64748b', callback: v => v+' min' },
+            title:{display:true,text:'Minutos',font:{size:10},color:'#94a3b8'} }
       }
     }
   });
 }
 
-// ── Tab switching ──
-function go(idx){
-  document.querySelectorAll('.panel').forEach((el,i)=>el.classList.toggle('active',i===idx));
-  document.querySelectorAll('.tab').forEach((btn,i)=>btn.classList.toggle('active',i===idx));
+/* ─── Render data table ─── */
+function renderTable(bi, storeId) {
+  const d = addCooking(getChartData(bi, storeId));
+  const labels = granularity === 'weekly' ? W : DAILY_DAYS;
+  const periodLabel = granularity === 'weekly' ? 'Semana' : 'Fecha';
+  const detailLabel = granularity === 'weekly' ? 'semanal' : 'diario';
+  const storeName = storeId === 'all' ? BRAND[bi].name : (STORES[bi].find(x=>x.id===storeId)||{name:'—'}).name;
+  const chipClass = e => e == null ? '' : e <= SLA.e2e ? 'ok2' : e <= SLA.e2e*1.3 ? 'warn2' : 'crit2';
+  const fmt = v => v != null ? v.toFixed(1) : '—';
+  let rows = '';
+  labels.forEach((lk, i) => {
+    if (d.e2e[i] == null) return;
+    /* Column order matches bar order: int → cok → rw → rp → ra → del → e2e */
+    rows += `<tr><td>${lk}</td><td>${fmt(d.int[i])}</td><td>${fmt(d.cok[i])}</td><td>${fmt(d.rw[i])}</td><td>${fmt(d.rp[i])}</td><td>${fmt(d.ra[i])}</td><td>${fmt(d.del[i])}</td><td><span class="ch ${chipClass(d.e2e[i])}">${fmt(d.e2e[i])}</span></td></tr>`;
+  });
+  document.getElementById(`tbl-${bi}`).innerHTML = `
+    <div class="ttitle">${storeName} — Detalle ${detailLabel}</div>
+    <table>
+      <thead><tr>
+        <th>${periodLabel}</th>
+        <th><span class="sw" style="background:${P.int}"></span>Integration</th>
+        <th><span class="sw" style="background:${P.cok}"></span>Cocina</th>
+        <th><span class="sw" style="background:${P.rw}"></span>Rest Wait RT</th>
+        <th><span class="sw" style="background:${P.rp}"></span>RTWT Perm</th>
+        <th><span class="sw" style="background:${P.ra}"></span>RTWT After</th>
+        <th><span class="sw" style="background:${P.del}"></span>Delivery</th>
+        <th><span class="sw" style="background:${P.e2e}"></span>E2E</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
 }
 
-// ── Init ──
-buildChart('c0', DATA[0]);
-buildChart('c1', DATA[1]);
-buildChart('c2', DATA[2]);
-buildChart('c3', DATA[3]);
+/* ─── Store filter changed ─── */
+function onFilter(bi) {
+  const storeId = document.getElementById(`flt-${bi}`).value;
+  filterState[bi] = storeId;
+  let info = '';
+  if (storeId !== 'all') {
+    const src = granularity === 'weekly' ? STORES[bi] : DAILY_STORES[bi];
+    const s = src.find(x => x.id === storeId);
+    if (s) {
+      const total = s.d.reduce((sum,row) => sum+(row?row[0]:0), 0);
+      info = `${total.toLocaleString()} órdenes`;
+    }
+  }
+  document.getElementById(`flt-info-${bi}`).textContent = info;
+  renderKPIs(bi, storeId);
+  updateChart(bi, storeId);
+  renderTable(bi, storeId);
+}
+
+/* ─── Granularity toggle ─── */
+function setGranularity(g) {
+  if (granularity === g) return;
+  granularity = g;
+  document.getElementById('btn-weekly').classList.toggle('on', g === 'weekly');
+  document.getElementById('btn-daily').classList.toggle('on', g === 'daily');
+  document.getElementById('gran-info').textContent = g === 'weekly'
+    ? 'Feb 02 – Mar 30, 2026 \u00b7 9 semanas'
+    : 'Mar 01 – Abr 05, 2026 \u00b7 36 días';
+  // Re-render only the active tab
+  const bi = activeTab;
+  renderKPIs(bi, filterState[bi]);
+  updateChart(bi, filterState[bi]);
+  renderTable(bi, filterState[bi]);
+}
+
+/* ─── Build panels ─── */
+function buildPanels() {
+  const container = document.getElementById('panels');
+  BRAND.forEach((b, bi) => {
+    const storeOpts = STORES[bi].map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    const panel = document.createElement('div');
+    panel.className = 'panel' + (bi===0?' on':'');
+    panel.id = `p${bi}`;
+    panel.innerHTML = `
+      <div class="filter-bar">
+        <span class="filter-label">Tienda:</span>
+        <select class="filter-select" id="flt-${bi}" onchange="onFilter(${bi})">
+          <option value="all">Todas las tiendas</option>
+          ${storeOpts}
+        </select>
+        <span class="filter-info" id="flt-info-${bi}"></span>
+      </div>
+      <div class="kpis" id="kpis-${bi}"></div>
+      <div class="cbox">
+        <div class="ctitle">
+          <h2>E2E | ${b.name} — Ally Times</h2>
+          <span id="ctitle-span-${bi}">minutos promedio</span>
+        </div>
+        <div class="cwrap"><canvas id="c${bi}"></canvas></div>
+      </div>
+      <div class="tbox" id="tbl-${bi}"></div>`;
+    container.appendChild(panel);
+  });
+}
+
+/* ─── Tab switch ─── */
+function go(i) {
+  activeTab = i;
+  document.querySelectorAll('.panel').forEach((el,j) => el.classList.toggle('on', j===i));
+  document.querySelectorAll('.tab').forEach((btn,j) => btn.classList.toggle('on', j===i));
+  // Lazy-render tabs that haven't been built yet
+  if (!charts[i]) {
+    renderKPIs(i, filterState[i]);
+    updateChart(i, filterState[i]);
+    renderTable(i, filterState[i]);
+  }
+}
+
+/* ─── Init ─── */
+buildPanels();
+[0,1,2,3].forEach(bi => {
+  renderKPIs(bi, 'all');
+  updateChart(bi, 'all');
+  renderTable(bi, 'all');
+});
 </script>
 </body>
 </html>
